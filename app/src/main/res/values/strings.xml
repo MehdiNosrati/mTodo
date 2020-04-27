@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">mTodo</string>
+    <string name="content_app_icon">App Icon</string>
 </resources>

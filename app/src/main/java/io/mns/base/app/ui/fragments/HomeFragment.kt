@@ -11,7 +11,11 @@ import io.mns.base.app.ui.viewmodels.HomeViewModel
 class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
     private val viewModel by viewModels<HomeViewModel>()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    init {
+        loadData()
+    }
+
+    private fun loadData() {
 
     }
 }
