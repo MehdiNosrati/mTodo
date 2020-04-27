@@ -18,6 +18,10 @@ android {
         versionName = AppCoordinates.APP_VERSION_NAME
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    dataBinding {
+        isEnabled = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -56,6 +60,7 @@ dependencies {
     implementation(SupportLibs.ANDROIDX_CORE_KTX)
     implementation(SupportLibs.LEGACY_SUPPORT)
     implementation(SupportLibs.ANDROIDX_FRAGMENT_KTX)
+    implementation(SupportLibs.DESIGN)
 
     // multi dex
     implementation(MultiDex.MULTI_DEX)

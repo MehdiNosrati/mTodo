@@ -24,6 +24,7 @@ object Versions {
     const val RETROFIT = "2.8.1"
     const val GLIDE = "4.11.0"
     const val KOIN = "2.1.5"
+    const val MATERIAL_DESIGN = "1.2.0-alpha06"
 }
 
 object BuildPluginsVersion {
@@ -36,6 +37,7 @@ object BuildPluginsVersion {
 
 object SupportLibs {
     const val ANDROIDX_APPCOMPAT = "androidx.appcompat:appcompat:${Versions.APPCOMPAT}"
+    const val DESIGN = "com.google.android.material:material:${Versions.MATERIAL_DESIGN}"
     const val ANDROIDX_CONSTRAINT_LAYOUT = "com.android.support.constraint:constraint-layout:${Versions.CONSTRAINT_LAYOUT}"
     const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:${Versions.CORE_KTX}"
     const val LEGACY_SUPPORT = "androidx.legacy:legacy-support-v4:${Versions.LEGACY_SUPPORT}"

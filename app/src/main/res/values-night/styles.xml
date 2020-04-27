@@ -8,5 +8,4 @@
         <item name="android:textColor">@color/textGrey</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
     </style>
-
 </resources>
