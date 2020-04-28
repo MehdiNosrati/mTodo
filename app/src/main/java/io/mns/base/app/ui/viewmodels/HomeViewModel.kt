@@ -28,4 +28,8 @@ class HomeViewModel(application: Application): AndroidViewModel(application), Ko
             repository.update(item)
         }
     }
+
+    fun addClicked() {
+
+    }
 }
