@@ -7,10 +7,6 @@
         <variable
             name="item"
             type="io.mns.base.app.data.TodoItem" />
-
-        <variable
-            name="callback"
-            type="io.mns.base.app.ui.adapters.callbacks.TodoClickCallBack" />
     </data>
 
     <androidx.cardview.widget.CardView
