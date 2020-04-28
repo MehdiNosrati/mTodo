@@ -70,6 +70,11 @@ dependencies {
     implementation(Navigation.UI_KTX)
     implementation(Navigation.RUNTIME_KTX)
 
+    // room
+    implementation(Room.RUNTIME)
+    kapt(Room.COMPILER)
+    implementation(Room.KTX)
+
     // view model
     implementation(LifeCycle.VIEW_MODEL)
     implementation(LifeCycle.LIVE_DATA)
@@ -78,6 +83,9 @@ dependencies {
 
     //koin
     implementation(Koin.CORE)
+
+    // animated checkbox
+    implementation(CheckBox.LIB)
 
     // test
     testImplementation(TestingLib.JUNIT)

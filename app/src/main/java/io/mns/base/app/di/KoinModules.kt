@@ -7,7 +7,7 @@ import io.mns.base.app.data.persistence.TodoDataBase
 import org.koin.dsl.module
 
 object KoinModules {
-    val appModule = module{
+    val appModule = module {
         single {
             NotificationUtil(get())
         }
