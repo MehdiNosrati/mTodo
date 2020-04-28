@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="item"
+            type="io.mns.base.app.data.TodoItem" />
+
+        <variable
+            name="callback"
+            type="io.mns.base.app.ui.adapters.callbacks.TodoClickCallBack" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="32dp"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/colorPrimary"
+        app:cardElevation="8dp"
+        app:contentPadding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:textSize="16sp"
+                android:layout_weight="1"
+                android:text="@{item.title}" />
+
+            <com.github.lguipeng.library.animcheckbox.AnimCheckBox
+                android:id="@+id/done"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:checked="@{item.done}"
+                app:circle_color="@color/colorAccent"
+                app:stroke_color="@color/colorAccent"
+                app:stroke_width="1dp"
+                android:elevation="4dp"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
+
