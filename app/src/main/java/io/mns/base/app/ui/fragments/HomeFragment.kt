@@ -1,6 +1,7 @@
 package io.mns.base.app.ui.fragments
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -27,7 +28,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
     private fun loadData() {
         adapter = TodoAdapter(this)
         binding.list.setHasFixedSize(true)
-        binding.list.itemAnimator = null
         adapter.setHasStableIds(true)
         binding.list.adapter = adapter
 
@@ -38,8 +38,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
         })
     }
 
-    override fun todoChanged(todo: TodoItem, checked: Boolean) {
-        todo.done = checked
-        viewModel.update(todo)
+    override fun todoDone(todo: TodoItem) {
+        todo.done = true
+        Handler().postDelayed({
+            viewModel.update(todo)
+        }, 800)
     }
 }
