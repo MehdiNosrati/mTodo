@@ -25,6 +25,7 @@ object Versions {
     const val GLIDE = "4.11.0"
     const val KOIN = "2.1.5"
     const val MATERIAL_DESIGN = "1.2.0-alpha06"
+    const val CHECK_BOX = "1.0.1"
 }
 
 object BuildPluginsVersion {
@@ -99,4 +100,8 @@ object Glide {
 object Koin {
     const val CORE = "org.koin:koin-android:${Versions.KOIN}"
     const val TEST = "org.koin:koin-test:$${Versions.KOIN}"
+}
+
+object CheckBox {
+    const val LIB = "com.github.lguipeng:AnimCheckBox:${Versions.CHECK_BOX}"
 }
