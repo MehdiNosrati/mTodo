@@ -37,10 +37,9 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 app:checked="@{item.done}"
-                app:circle_color="@color/colorAccent"
+                app:circle_color="@color/circleColor"
                 app:stroke_color="@color/colorAccent"
-                app:stroke_width="1dp"
-                android:elevation="4dp"/>
+                app:stroke_width="4dp"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

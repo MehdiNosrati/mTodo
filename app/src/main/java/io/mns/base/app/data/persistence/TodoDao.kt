@@ -15,6 +15,6 @@ interface TodoDao {
     @Update
     suspend fun updateTodo(todo: TodoItem)
 
-    @Query("select * from todos")
+    @Query("select * from todos where not done")
     fun getTodos(): LiveData<List<TodoItem>?>
 }

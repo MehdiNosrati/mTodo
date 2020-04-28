@@ -27,6 +27,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
     private fun loadData() {
         adapter = TodoAdapter(this)
         binding.list.setHasFixedSize(true)
+        binding.list.itemAnimator = null
         adapter.setHasStableIds(true)
         binding.list.adapter = adapter
 

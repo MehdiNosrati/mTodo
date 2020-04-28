@@ -13,7 +13,7 @@ class App: MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
         startKoin()
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     }
 
     private fun startKoin() {
