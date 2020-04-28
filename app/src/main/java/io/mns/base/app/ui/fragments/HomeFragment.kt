@@ -5,6 +5,7 @@ import android.os.Handler
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import io.mns.base.app.ADD_FRAGMENT_TAG
 import io.mns.base.app.R
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.databinding.FragmentHomeBinding
@@ -19,18 +20,31 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        init()
+    }
+
+    private fun init() {
+        binding.vm = viewModel
+        initiateList()
         loadData()
-        binding.add.setOnClickListener {
-            viewModel.insert()
-        }
+        observeAdd()
+    }
+
+    private fun observeAdd() {
+        viewModel.addClicked.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                viewModel.addHandled()
+                AddFragment(::addTodo).show(parentFragmentManager, ADD_FRAGMENT_TAG)
+            }
+        })
+    }
+
+    private fun addTodo(title: String) {
+        viewModel.insert(title)
+        binding.list.smoothScrollToPosition(0)
     }
 
     private fun loadData() {
-        adapter = TodoAdapter(this)
-        binding.list.setHasFixedSize(true)
-        adapter.setHasStableIds(true)
-        binding.list.adapter = adapter
-
         viewModel.load().observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 adapter.setData(it)
@@ -38,10 +52,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
         })
     }
 
+    private fun initiateList() {
+        adapter = TodoAdapter(this)
+        binding.list.setHasFixedSize(true)
+        adapter.setHasStableIds(true)
+        binding.list.adapter = adapter
+    }
+
     override fun todoDone(todo: TodoItem) {
-        todo.done = true
         Handler().postDelayed({
-            viewModel.update(todo)
+            viewModel.done(todo)
         }, 800)
     }
 }
