@@ -36,7 +36,7 @@
                 android:id="@+id/done"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                app:checked="@{item.done}"
+                app:checked="false"
                 app:circle_color="@color/circleColor"
                 app:stroke_color="@color/colorAccent"
                 app:stroke_width="4dp"/>

@@ -58,7 +58,6 @@ dependencies {
     implementation(SupportLibs.ANDROIDX_APPCOMPAT)
     implementation(SupportLibs.ANDROIDX_CONSTRAINT_LAYOUT)
     implementation(SupportLibs.ANDROIDX_CORE_KTX)
-    implementation(SupportLibs.LEGACY_SUPPORT)
     implementation(SupportLibs.ANDROIDX_FRAGMENT_KTX)
     implementation(SupportLibs.DESIGN)
 

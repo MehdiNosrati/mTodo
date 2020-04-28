@@ -5,9 +5,9 @@ import androidx.databinding.Bindable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "todos")
-data class TodoItem(
+@Entity(tableName = "doneItems")
+data class DoneItem(
     @PrimaryKey val id: String,
-    val createdAt: Long,
+    val doneAt: Long,
     @Bindable val title: String
 ) : BaseObservable()
