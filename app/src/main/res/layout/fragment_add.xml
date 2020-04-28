@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="vm"
+            type="io.mns.base.app.ui.viewmodels.AddViewModel" />
+        <variable
+            name="title"
+            type="String" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="16dp"
+        android:paddingHorizontal="16dp"
+        android:background="@color/colorPrimary">
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@={title}"
+            android:layout_gravity="center_vertical"
+            android:autofillHints="@null"
+            android:hint="@string/add_hint"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:singleLine="true"
+            android:maxLines="1"
+            android:paddingBottom="32dp"
+            android:background="@color/colorPrimary"
+            android:textColorHint="@color/hintColor"
+            android:inputType="textNoSuggestions" />
+
+        <FrameLayout
+            android:layout_gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{() -> vm.addClicked()}">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_add_lite"
+                android:contentDescription="@string/content_add_button" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+</layout>

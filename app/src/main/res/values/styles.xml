@@ -8,7 +8,6 @@
         <item name="android:textColor">@color/textGrey</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="fontFamily">@font/nunito</item>
-        <item name="android:windowDisablePreview">true</item>
     </style>
 
     <style name="AppTheme.LaunchTheme" parent="AppTheme">

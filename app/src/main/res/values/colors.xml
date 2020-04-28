@@ -6,4 +6,5 @@
     <color name="circleColor">#90CAF9</color>
     <color name="textGrey">#455a64</color>
     <color name="white">#FFF</color>
+    <color name="hintColor">#CCC</color>
 </resources>
