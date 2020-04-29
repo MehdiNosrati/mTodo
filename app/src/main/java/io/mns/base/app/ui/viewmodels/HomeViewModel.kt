@@ -20,6 +20,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
     val addClicked: LiveData<Boolean>
         get() = _addClicked
 
+    private val _settingClicked: MutableLiveData<Boolean> = MutableLiveData(false)
+    val settingClicked: LiveData<Boolean>
+        get() = _settingClicked
+
 
     fun insertItem(title: String) {
         viewModelScope.launch {
@@ -43,5 +47,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
 
     fun addHandled() {
         _addClicked.postValue(false)
+    }
+
+    fun settingClicked() {
+        _settingClicked.postValue(true)
+    }
+
+    fun settingHandled() {
+        _settingClicked.postValue(false)
     }
 }

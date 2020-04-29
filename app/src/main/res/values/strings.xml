@@ -10,4 +10,6 @@
     <string name="to_be_done">To Be Done</string>
     <string name="already_done">Already Done</string>
     <string name="content_menu_button">menu button</string>
+    <string name="settings">Settings</string>
+    <string name="dark_theme">Toggle Dark Theme</string>
 </resources>

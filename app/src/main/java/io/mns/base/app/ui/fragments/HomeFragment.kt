@@ -5,10 +5,12 @@ import android.os.Handler
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import io.mns.base.app.ADD_FRAGMENT_TAG
 import io.mns.base.app.R
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.databinding.FragmentHomeBinding
+import io.mns.base.app.ui.MainActivity
 import io.mns.base.app.ui.adapters.TodoAdapter
 import io.mns.base.app.ui.adapters.callbacks.TodoClickCallBack
 import io.mns.base.app.ui.viewmodels.HomeViewModel
@@ -28,6 +30,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
         initiateList()
         loadData()
         observeAdd()
+        observeSetting()
+    }
+
+    private fun observeSetting() {
+        (requireActivity() as MainActivity).showBottomNav()
+        viewModel.settingClicked.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                viewModel.settingHandled()
+                Navigation.findNavController(requireView())
+                    .navigate(R.id.action_homeFragment_to_settingFragment)
+                (requireActivity() as MainActivity).hideBottomNav()
+            }
+        })
     }
 
     private fun observeAdd() {
@@ -41,7 +56,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     private fun addTodo(title: String) {
         viewModel.insertItem(title)
-        binding.list.layoutManager?.scrollToPosition(0)
+        Handler().post {
+            binding.list.layoutManager?.scrollToPosition(0)
+        }
     }
 
     private fun loadData() {

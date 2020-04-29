@@ -23,7 +23,8 @@
     <me.ibrahimsn.lib.SmoothBottomBar
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:visibility="gone"
+        android:layout_height="@dimen/bottom_nav_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:backgroundColor="@color/bottomBackground"
         app:indicatorColor="@color/bottomIndicator"

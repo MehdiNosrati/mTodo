@@ -1,6 +1,7 @@
 package io.mns.base.app.ui
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -30,5 +31,24 @@ class MainActivity : AppCompatActivity() {
         if (navController.navigateUp()) {
             bottomBar.setActiveItem(0)
         } else finish()
+    }
+
+    fun hideBottomNav() {
+        bottomBar.animate().apply {
+            translationY(resources.getDimensionPixelSize(R.dimen.bottom_nav_height).toFloat())
+            duration = 300
+            start()
+        }
+    }
+
+    fun showBottomNav() {
+        bottomBar.visibility = View.VISIBLE
+        if (bottomBar.translationY != 0f) {
+            bottomBar.animate().apply {
+                translationY(0f)
+                duration = 300
+                start()
+            }
+        }
     }
 }
