@@ -86,6 +86,9 @@ dependencies {
     // animated checkbox
     implementation(CheckBox.LIB)
 
+    // bottom nav bar
+    implementation(SmoothBottomBar.LIB)
+
     // test
     testImplementation(TestingLib.JUNIT)
     androidTestImplementation(AndroidTestingLib.ANDROIDX_TEST_EXT_JUNIT)
