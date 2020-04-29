@@ -5,4 +5,6 @@
     <string name="content_add_button">add button</string>
     <string name="cancel">Cancel</string>
     <string name="not_now">Not now</string>
+    <string name="todo">Todo</string>
+    <string name="done">Done</string>
 </resources>

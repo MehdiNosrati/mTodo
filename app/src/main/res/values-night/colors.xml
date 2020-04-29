@@ -6,4 +6,7 @@
     <color name="circleColor">#90CAF9</color>
     <color name="textGrey">#FFF</color>
     <color name="hintColor">#8DA0AF</color>
+    <color name="bottomBackground">#102027</color>
+    <color name="bottomIndicator">#37474f</color>
+    <color name="bottomIconTint">#8DA0AF</color>
 </resources>
