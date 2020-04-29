@@ -62,7 +62,8 @@ class TodoAdapter(private val clickCallBack: TodoClickCallBack) :
 
         fun bind(item: TodoItem) {
             binding.item = item
-            binding.done.setOnCheckedChangeListener { _, checked ->
+            binding.done.isChecked = false
+            binding.done.setOnCheckedChangeListener { _, _ ->
                 clickCallBack.todoDone(item)
             }
             binding.executePendingBindings()
