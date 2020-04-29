@@ -1,6 +1,7 @@
 package io.mns.base.app.ui.fragments
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +29,18 @@ class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.vm = viewModel
         observeAdd()
+        observeBack()
+    }
+
+    private fun observeBack() {
+        viewModel.backClicked.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                viewModel.backHandled()
+                Handler().postDelayed({
+                    dismiss()
+                }, 200)
+            }
+        })
     }
 
     private fun observeAdd() {
@@ -36,8 +49,10 @@ class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
                 viewModel.addHandled()
                 val title = binding.title
                 if (title != null && title.isNotEmpty()) {
-                    insert(title)
-                    dismiss()
+                    Handler().postDelayed({
+                        insert(title)
+                        dismiss()
+                    }, 200)
                 }
             }
         })

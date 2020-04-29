@@ -10,6 +10,10 @@ class AddViewModel(application: Application): AndroidViewModel(application) {
     val addClicked: LiveData<Boolean>
         get() = _addClicked
 
+    private val _backClicked: MutableLiveData<Boolean> = MutableLiveData(false)
+    val backClicked: LiveData<Boolean>
+        get() = _backClicked
+
 
     fun addClicked() {
         _addClicked.postValue(true)
@@ -18,4 +22,14 @@ class AddViewModel(application: Application): AndroidViewModel(application) {
     fun addHandled() {
         _addClicked.postValue(false)
     }
+
+    fun backClicked() {
+        _backClicked.postValue(true)
+    }
+
+    fun backHandled() {
+        _backClicked.postValue(false)
+    }
+
+
 }

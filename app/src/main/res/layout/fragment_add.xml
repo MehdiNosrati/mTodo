@@ -3,56 +3,90 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="vm"
             type="io.mns.base.app.ui.viewmodels.AddViewModel" />
+
         <variable
             name="title"
             type="String" />
     </data>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="16dp"
-        android:paddingHorizontal="16dp"
-        android:background="@color/colorPrimary">
+        android:layout_height="wrap_content">
 
-        <EditText
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@={title}"
-            android:layout_gravity="center_vertical"
-            android:autofillHints="@null"
-            android:hint="@string/add_hint"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="16dp"
-            android:singleLine="true"
-            android:maxLines="1"
-            android:paddingBottom="32dp"
-            android:background="@color/colorPrimary"
-            android:textColorHint="@color/hintColor"
-            android:inputType="textNoSuggestions" />
+        <TextView
 
-        <FrameLayout
-            android:layout_gravity="center_vertical"
+            android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="8dp"
             android:clickable="true"
+            android:drawableStart="@drawable/ic_back"
+            android:drawablePadding="8dp"
             android:focusable="true"
-            android:onClick="@{() -> vm.addClicked()}">
-            <ImageView
+            android:paddingHorizontal="8dp"
+            android:text="@string/not_now"
+            android:textColor="@color/colorAccent"
+            android:onClick="@{() -> vm.backClicked()}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimary"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cancel">
+
+            <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:autofillHints="@null"
+                android:background="@color/colorPrimary"
+                android:hint="@string/add_hint"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="32dp"
+                android:singleLine="true"
+                android:text="@={title}"
+                android:textColorHint="@color/hintColor" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_add_lite"
-                android:contentDescription="@string/content_add_button" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="@{() -> vm.addClicked()}">
 
-        </FrameLayout>
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/content_add_button"
+                    app:srcCompat="@drawable/ic_add_lite" />
 
-    </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </layout>
