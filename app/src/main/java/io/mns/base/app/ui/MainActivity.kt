@@ -27,7 +27,8 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
-        navController.navigateUp()
-        bottomBar.setActiveItem(0)
+        if (navController.navigateUp()) {
+            bottomBar.setActiveItem(0)
+        } else finish()
     }
 }

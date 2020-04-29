@@ -47,6 +47,7 @@ class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
         viewModel.addClicked.observe(viewLifecycleOwner, Observer {
             if (it) {
                 viewModel.addHandled()
+                binding.add.setOnClickListener(null)
                 val title = binding.title
                 if (title != null && title.isNotEmpty()) {
                     Handler().postDelayed({

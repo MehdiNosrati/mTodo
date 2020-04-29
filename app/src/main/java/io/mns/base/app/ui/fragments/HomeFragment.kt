@@ -41,7 +41,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     private fun addTodo(title: String) {
         viewModel.insertItem(title)
-        binding.list.smoothScrollToPosition(0)
+        binding.list.layoutManager?.scrollToPosition(0)
     }
 
     private fun loadData() {

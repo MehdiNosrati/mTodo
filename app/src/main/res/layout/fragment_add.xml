@@ -79,6 +79,7 @@
                 android:onClick="@{() -> vm.addClicked()}">
 
                 <ImageView
+                    android:id="@+id/add"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:contentDescription="@string/content_add_button"

@@ -7,4 +7,7 @@
     <string name="not_now">Not now</string>
     <string name="todo">Todo</string>
     <string name="done">Done</string>
+    <string name="to_be_done">To Be Done</string>
+    <string name="already_done">Already Done</string>
+    <string name="content_menu_button">menu button</string>
 </resources>
