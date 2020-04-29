@@ -10,3 +10,6 @@ fun Resources.toggleTheme() {
         else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     }
 }
+
+fun Resources.isDark() =
+    (configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_NO
