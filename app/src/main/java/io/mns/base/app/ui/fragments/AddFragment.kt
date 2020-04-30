@@ -13,9 +13,15 @@ import io.mns.base.app.ui.viewmodels.AddViewModel
 
 typealias OnInsert = (title: String) -> Unit
 
-class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
+class AddFragment private constructor(private val insert: OnInsert) : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddBinding
     private val viewModel by viewModels<AddViewModel>()
+
+    companion object {
+        fun getInstance(insert: OnInsert): AddFragment {
+            return AddFragment(insert)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
