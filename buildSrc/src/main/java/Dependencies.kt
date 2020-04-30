@@ -21,8 +21,6 @@ object Versions {
     const val LIFE_CYCLE = "2.2.0"
     const val ARCH = "2.1.0"
     const val MULTI_DEX = "2.0.1"
-    const val RETROFIT = "2.8.1"
-    const val GLIDE = "4.11.0"
     const val KOIN = "2.1.5"
     const val MATERIAL_DESIGN = "1.2.0-alpha06"
     const val CHECK_BOX = "1.0.1"
@@ -42,8 +40,6 @@ object SupportLibs {
     const val DESIGN = "com.google.android.material:material:${Versions.MATERIAL_DESIGN}"
     const val ANDROIDX_CONSTRAINT_LAYOUT = "com.android.support.constraint:constraint-layout:${Versions.CONSTRAINT_LAYOUT}"
     const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:${Versions.CORE_KTX}"
-    const val LEGACY_SUPPORT = "androidx.legacy:legacy-support-v4:${Versions.LEGACY_SUPPORT}"
-    const val ANDROIDX_COLLECTION_KTX = "androidx.collection:collection-ktx:${Versions.COLLECTION_KTX}"
     const val ANDROIDX_FRAGMENT_KTX = "androidx.fragment:fragment-ktx:${Versions.FRAGMENT_KTX}"
 }
 
@@ -71,7 +67,6 @@ object Room {
 
 object Navigation {
     const val SAFE_ARGS = "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.NAVIGATION}"
-    const val DYNAMIC = "androidx.navigation:navigation-dynamic-features-fragment:${Versions.NAVIGATION}"
     const val RUNTIME_KTX = "androidx.navigation:navigation-runtime-ktx:${Versions.NAVIGATION}"
     const val FRAGMENT_KTX = "androidx.navigation:navigation-fragment-ktx:${Versions.NAVIGATION}"
     const val UI_KTX = "androidx.navigation:navigation-ui-ktx:${Versions.NAVIGATION}"
@@ -83,19 +78,6 @@ object LifeCycle {
     const val LIVE_DATA = "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.LIFE_CYCLE}"
     const val COMMON = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFE_CYCLE}"
     const val COMPILER = "androidx.lifecycle:lifecycle-common-java8:${Versions.LIFE_CYCLE}"
-    const val APPLICATION = "androidx.lifecycle:lifecycle-process:${Versions.LIFE_CYCLE}"
-    const val SERVICE = "androidx.lifecycle:lifecycle-service:${Versions.LIFE_CYCLE}"
-    const val TEST = "androidx.arch.core:core-testing:${Versions.ARCH}"
-}
-
-object Retrofit {
-    const val CORE = "com.squareup.retrofit2:retrofit:${Versions.RETROFIT}"
-    const val GSON_CONVERTER = "com.squareup.retrofit2:converter-gson:${Versions.RETROFIT}"
-}
-
-object Glide {
-    const val CORE = "com.github.bumptech.glide:glide:${Versions.GLIDE}"
-    const val COMPILER = "com.github.bumptech.glide:compiler:${Versions.GLIDE}"
 }
 
 object Koin {
