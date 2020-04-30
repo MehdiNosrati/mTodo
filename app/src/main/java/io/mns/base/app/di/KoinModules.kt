@@ -13,8 +13,7 @@ object KoinModules {
         }
 
         single {
-            Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
-                .fallbackToDestructiveMigration().build()
+            Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db").build()
         }
 
         single {
