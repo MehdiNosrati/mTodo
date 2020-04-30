@@ -8,22 +8,25 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isInvisible
 import io.mns.androidlib.*
 import io.mns.base.app.R
-import kotlinx.android.synthetic.main.activity_launch.*
 import kotlin.math.hypot
+import kotlinx.android.synthetic.main.activity_launch.*
 
-class LaunchActivity(): AppCompatActivity() {
+class LaunchActivity() : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         preAnimationSetup()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
         performCircularReveal()
-        Handler().postDelayed({
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }, 1000)
+        Handler().postDelayed(
+            {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            },
+            1000
+        )
     }
- private fun performCircularReveal() {
+    private fun performCircularReveal() {
         if (!hasSourceBounds) {
             rootContentLayout.isInvisible = false
         } else {

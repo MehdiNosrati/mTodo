@@ -1,6 +1,5 @@
 package io.mns.base.app.ui.adapters
 
-import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -54,7 +53,6 @@ class TodoAdapter(private val clickCallBack: TodoClickCallBack) :
         return data.size
     }
 
-
     class TodoViewHolder(
         private val binding: ItemTodoBinding,
         private val clickCallBack: TodoClickCallBack
@@ -81,7 +79,8 @@ class TodoAdapter(private val clickCallBack: TodoClickCallBack) :
                         inflater,
                         parent,
                         false
-                    ), clickCallBack
+                    ),
+                    clickCallBack
                 )
             }
         }

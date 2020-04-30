@@ -1,5 +1,4 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.jetbrains.kotlin.ir.builders.declarations.buildClass
 
 plugins {
     id("com.android.application") version BuildPluginsVersion.AGP apply false

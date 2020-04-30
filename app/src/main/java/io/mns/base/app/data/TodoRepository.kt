@@ -6,7 +6,6 @@ import io.mns.base.app.data.persistence.DoneDao
 import io.mns.base.app.data.persistence.TodoDao
 import java.util.*
 
-
 class TodoRepository(private val todoDao: TodoDao, private val doneDao: DoneDao) {
     private val todoMediator = MediatorLiveData<List<TodoItem>>()
     private val doneMediator = MediatorLiveData<List<DoneItem>>()

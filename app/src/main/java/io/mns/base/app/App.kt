@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
-class App: MultiDexApplication() {
+class App : MultiDexApplication() {
     private lateinit var preferences: SharedPreferences
     override fun onCreate() {
         super.onCreate()
@@ -26,7 +26,6 @@ class App: MultiDexApplication() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
         }
     }
 

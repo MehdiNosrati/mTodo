@@ -15,7 +15,6 @@ import io.mns.base.app.ui.adapters.TodoAdapter
 import io.mns.base.app.ui.adapters.callbacks.TodoClickCallBack
 import io.mns.base.app.ui.viewmodels.HomeViewModel
 
-
 class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), TodoClickCallBack {
     private val viewModel by viewModels<HomeViewModel>()
     private lateinit var adapter: TodoAdapter
@@ -35,23 +34,29 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     private fun observeSetting() {
         (requireActivity() as MainActivity).showBottomNav()
-        viewModel.settingClicked.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.settingHandled()
-                Navigation.findNavController(requireView())
-                    .navigate(R.id.action_homeFragment_to_settingFragment)
-                (requireActivity() as MainActivity).hideBottomNav()
+        viewModel.settingClicked.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.settingHandled()
+                    Navigation.findNavController(requireView())
+                        .navigate(R.id.action_homeFragment_to_settingFragment)
+                    (requireActivity() as MainActivity).hideBottomNav()
+                }
             }
-        })
+        )
     }
 
     private fun observeAdd() {
-        viewModel.addClicked.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.addHandled()
-                AddFragment(::addTodo).show(parentFragmentManager, ADD_FRAGMENT_TAG)
+        viewModel.addClicked.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.addHandled()
+                    AddFragment(::addTodo).show(parentFragmentManager, ADD_FRAGMENT_TAG)
+                }
             }
-        })
+        )
     }
 
     private fun addTodo(title: String) {
@@ -62,10 +67,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
     }
 
     private fun loadData() {
-        viewModel.loadItems().observe(viewLifecycleOwner, Observer {
-            binding.emptyList = it.isEmpty()
-            adapter.setData(it)
-        })
+        viewModel.loadItems().observe(
+            viewLifecycleOwner,
+            Observer {
+                binding.emptyList = it.isEmpty()
+                adapter.setData(it)
+            }
+        )
     }
 
     private fun initiateList() {
@@ -76,8 +84,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
     }
 
     override fun todoDone(todo: TodoItem) {
-        Handler().postDelayed({
-            viewModel.done(todo)
-        }, 800)
+        Handler().postDelayed(
+            {
+                viewModel.done(todo)
+            },
+            800
+        )
     }
 }

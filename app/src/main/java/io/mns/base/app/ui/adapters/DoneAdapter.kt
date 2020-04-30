@@ -53,7 +53,6 @@ class DoneAdapter() :
         return data.size
     }
 
-
     class DoneViewHolder(
         private val binding: ItemDoneBinding
     ) :

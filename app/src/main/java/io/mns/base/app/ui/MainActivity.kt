@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         setBottomNavListener()
     }
 
-
     private fun setBottomNavListener() {
         binding.bottomBar.onItemSelected = {
             when (it) {
@@ -44,7 +43,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     override fun onBackPressed() {
         if (navController.navigateUp()) {
@@ -61,33 +59,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun themeChanged() {
-        Handler().postDelayed({
-            try {
-                binding.imageView.setImageBitmap(bitmap)
-                binding.imageView.isVisible = true
-                val w = binding.container.measuredWidth
-                val h = binding.container.measuredHeight
-                val finalRadius = hypot(w.toFloat(), h.toFloat())
-                val cx = resources.getDimensionPixelSize(R.dimen.moon_left)
-                val cy = resources.getDimensionPixelSize(R.dimen.moon_top)
-                val anim = ViewAnimationUtils.createCircularReveal(
-                    binding.imageView,
-                    cx,
-                    cy,
-                    finalRadius,
-                    0f
-                )
-                anim.duration = 400L
-                anim.doOnEnd {
-                    binding.imageView.setImageDrawable(null)
+        Handler().postDelayed(
+            {
+                try {
+                    binding.imageView.setImageBitmap(bitmap)
+                    binding.imageView.isVisible = true
+                    val w = binding.container.measuredWidth
+                    val h = binding.container.measuredHeight
+                    val finalRadius = hypot(w.toFloat(), h.toFloat())
+                    val cx = resources.getDimensionPixelSize(R.dimen.moon_left)
+                    val cy = resources.getDimensionPixelSize(R.dimen.moon_top)
+                    val anim = ViewAnimationUtils.createCircularReveal(
+                        binding.imageView,
+                        cx,
+                        cy,
+                        finalRadius,
+                        0f
+                    )
+                    anim.duration = 400L
+                    anim.doOnEnd {
+                        binding.imageView.setImageDrawable(null)
+                        binding.imageView.isVisible = false
+                    }
+                    anim.start()
+                } catch (e: Exception) {
                     binding.imageView.isVisible = false
+                    binding.imageView.setImageBitmap(null)
                 }
-                anim.start()
-            } catch (e: Exception) {
-                binding.imageView.isVisible = false
-                binding.imageView.setImageBitmap(null)
-            }
-        }, 50)
+            },
+            50
+        )
     }
 
     fun toggleTheme() {

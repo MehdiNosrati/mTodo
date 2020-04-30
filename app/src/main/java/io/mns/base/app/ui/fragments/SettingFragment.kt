@@ -31,29 +31,36 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
     }
 
     private fun handleTheme() {
-        viewModel.toggleTheme.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.themeToggled()
-                sharedPreferences.edit {
-                    putBoolean(IS_DARK, !resources.isDark())
-                }
-                Handler().postDelayed({
-                    if (activity != null) {
-                        (activity as MainActivity).toggleTheme()
+        viewModel.toggleTheme.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.themeToggled()
+                    sharedPreferences.edit {
+                        putBoolean(IS_DARK, !resources.isDark())
                     }
-                }, 200)
+                    Handler().postDelayed(
+                        {
+                            if (activity != null) {
+                                (activity as MainActivity).toggleTheme()
+                            }
+                        },
+                        200
+                    )
+                }
             }
-        })
-
+        )
     }
 
     private fun observeBack() {
-        viewModel.backClicked.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.backHandled()
-                Navigation.findNavController(requireView()).navigateUp()
+        viewModel.backClicked.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.backHandled()
+                    Navigation.findNavController(requireView()).navigateUp()
+                }
             }
-        })
+        )
     }
-
 }

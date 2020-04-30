@@ -11,7 +11,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.mns.base.app.databinding.FragmentAddBinding
 import io.mns.base.app.ui.viewmodels.AddViewModel
 
-
 typealias OnInsert = (title: String) -> Unit
 
 class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
@@ -19,7 +18,8 @@ class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
     private val viewModel by viewModels<AddViewModel>()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentAddBinding.inflate(inflater, container, false)
@@ -33,30 +33,41 @@ class AddFragment(private val insert: OnInsert) : BottomSheetDialogFragment() {
     }
 
     private fun observeBack() {
-        viewModel.backClicked.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.backHandled()
-                Handler().postDelayed({
-                    dismiss()
-                }, 200)
+        viewModel.backClicked.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.backHandled()
+                    Handler().postDelayed(
+                        {
+                            dismiss()
+                        },
+                        200
+                    )
+                }
             }
-        })
+        )
     }
 
     private fun observeAdd() {
-        viewModel.addClicked.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                viewModel.addHandled()
-                val title = binding.title
-                if (title != null && title.isNotEmpty()) {
-                    binding.add.setOnClickListener(null)
-                    Handler().postDelayed({
-                        insert(title)
-                        dismiss()
-                    }, 200)
+        viewModel.addClicked.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    viewModel.addHandled()
+                    val title = binding.title
+                    if (title != null && title.isNotEmpty()) {
+                        binding.add.setOnClickListener(null)
+                        Handler().postDelayed(
+                            {
+                                insert(title)
+                                dismiss()
+                            },
+                            200
+                        )
+                    }
                 }
             }
-        })
+        )
     }
-
 }

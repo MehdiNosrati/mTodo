@@ -5,13 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoRepository
+import java.util.*
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 import org.koin.core.inject
-import java.util.*
 
 class HomeViewModel(application: Application) : AndroidViewModel(application), KoinComponent {
     private val repository: TodoRepository by inject()
@@ -23,7 +22,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
     private val _settingClicked: MutableLiveData<Boolean> = MutableLiveData(false)
     val settingClicked: LiveData<Boolean>
         get() = _settingClicked
-
 
     fun insertItem(title: String) {
         viewModelScope.launch {

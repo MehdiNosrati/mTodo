@@ -36,8 +36,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
         }
     }
@@ -81,7 +81,7 @@ dependencies {
     implementation(LifeCycle.COMMON)
     implementation(LifeCycle.COMPILER)
 
-    //koin
+    // koin
     implementation(Koin.CORE)
 
     // animated checkbox
