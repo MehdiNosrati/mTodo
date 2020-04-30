@@ -8,16 +8,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isInvisible
 import io.mns.androidlib.*
 import io.mns.base.app.R
-import kotlin.math.hypot
 import kotlinx.android.synthetic.main.activity_launch.*
+import kotlin.math.hypot
 
-class LaunchActivity() : AppCompatActivity() {
+class LaunchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         preAnimationSetup()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
         performCircularReveal()
+        startMain()
+    }
+
+    private fun startMain() {
         Handler().postDelayed(
             {
                 startActivity(Intent(this, MainActivity::class.java))
@@ -26,6 +30,8 @@ class LaunchActivity() : AppCompatActivity() {
             1000
         )
     }
+
+    // launch application with circular reveal animation
     private fun performCircularReveal() {
         if (!hasSourceBounds) {
             rootContentLayout.isInvisible = false
@@ -42,7 +48,7 @@ class LaunchActivity() : AppCompatActivity() {
                                 endRadius = hypot(width.toFloat(), height.toFloat())
                             ).apply {
                                 isInvisible = false
-                                duration = 500L
+                                duration = 600L
                             }
                             AnimatorSet()
                                 .apply { playTogether(circle, statusBarAnimator, navigationBarAnimator) }
