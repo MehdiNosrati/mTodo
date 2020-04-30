@@ -30,7 +30,8 @@
                 android:singleLine="true"
                 android:textSize="16sp"
                 android:layout_weight="1"
-                android:text="@{item.title}" />
+                android:text="@{item.title}"
+                android:layout_marginEnd="8dp"/>
 
             <com.github.lguipeng.library.animcheckbox.AnimCheckBox
                 android:id="@+id/done"
