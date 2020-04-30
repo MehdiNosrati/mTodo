@@ -7,7 +7,7 @@
         <item name="titleTextColor">@color/colorAccent</item>
         <item name="android:textColor">@color/textGrey</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
-        <item name="fontFamily">@font/vazir</item>
+        <item name="fontFamily">@font/nunito</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
     </style>
 
