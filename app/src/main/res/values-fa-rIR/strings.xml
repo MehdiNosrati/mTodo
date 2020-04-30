@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">کارام</string>
+    <string name="content_app_icon">نشان برنامه</string>
+    <string name="add_hint">چه کاری باید انجام بشه؟</string>
+    <string name="content_add_button">دکمه افزودن</string>
+    <string name="not_now">الان نه</string>
+    <string name="todo">کار هام</string>
+    <string name="done">انجام شدن</string>
+    <string name="to_be_done">کار هام</string>
+    <string name="already_done">انجام شدن</string>
+    <string name="content_menu_button">دکمه تنظیمات</string>
+    <string name="settings">تنظیمات</string>
+    <string name="dark_theme">تغییر پوسته</string>
+    <string name="no_todo">همه کارها انجام شدن</string>
+    <string name="no_done">هیچ کاری نکردی :(</string>
+</resources>
