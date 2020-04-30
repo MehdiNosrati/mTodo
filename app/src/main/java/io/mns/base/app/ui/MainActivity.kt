@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import android.view.ViewAnimationUtils
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
@@ -15,18 +16,17 @@ import androidx.navigation.Navigation
 import io.mns.androidlib.toggleTheme
 import io.mns.base.app.R
 import io.mns.base.app.databinding.ActivityMainBinding
-import java.lang.Exception
+import io.mns.base.app.ui.viewmodels.MainViewModel
 import kotlin.math.hypot
 
-var bitmap: Bitmap? = null
-
 class MainActivity : AppCompatActivity() {
+    private val viewModel by viewModels<MainViewModel>()
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        if (bitmap != null) {
+        if (viewModel.bitmap != null) {
             themeChanged()
         } else {
             binding.imageView.isVisible = false
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         Handler().postDelayed(
             {
                 try {
-                    binding.imageView.setImageBitmap(bitmap)
+                    binding.imageView.setImageBitmap(viewModel.bitmap)
                     binding.imageView.isVisible = true
                     val w = binding.container.measuredWidth
                     val h = binding.container.measuredHeight
@@ -98,8 +98,8 @@ class MainActivity : AppCompatActivity() {
 
         val w = binding.container.measuredWidth
         val h = binding.container.measuredHeight
-        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap!!)
+        viewModel.bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(viewModel.bitmap!!)
         binding.container.draw(canvas)
         resources.toggleTheme()
     }
