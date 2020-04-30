@@ -26,7 +26,7 @@ object Versions {
     const val KOIN = "2.1.5"
     const val MATERIAL_DESIGN = "1.2.0-alpha06"
     const val CHECK_BOX = "1.0.1"
-    const val BOTTOM_BAR = "1.7.5"
+    const val BOTTOM_BAR = "1.7.7"
 }
 
 object BuildPluginsVersion {
@@ -108,5 +108,5 @@ object CheckBox {
 }
 
 object SmoothBottomBar {
-    const val LIB = "com.github.ibrahimsn98:SmoothBottomBar:${Versions.BOTTOM_BAR}"
+    const val LIB = "com.github.MehdiNosrati:SmoothBottomBar:${Versions.BOTTOM_BAR}"
 }
