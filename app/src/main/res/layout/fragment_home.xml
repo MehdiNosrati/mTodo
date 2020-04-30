@@ -5,6 +5,9 @@
 
     <data>
         <variable
+            name="emptyList"
+            type="Boolean" />
+        <variable
             name="vm"
             type="io.mns.base.app.ui.viewmodels.HomeViewModel" />
     </data>
@@ -55,6 +58,19 @@
                     android:textStyle="bold" />
             </FrameLayout>
         </androidx.appcompat.widget.Toolbar>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/no_todo"
+            android:paddingHorizontal="16dp"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp"
+            app:isVisible="@{emptyList}"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"

@@ -47,6 +47,7 @@ class DoneFragment : BaseFragment<FragmentDoneBinding>(R.layout.fragment_done) {
 
     private fun loadData() {
         viewModel.loadItems().observe(viewLifecycleOwner, Observer {
+            binding.emptyList = it.isEmpty()
             adapter.setData(it)
         })
     }

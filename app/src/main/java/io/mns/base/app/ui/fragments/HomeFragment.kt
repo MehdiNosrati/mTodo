@@ -63,6 +63,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     private fun loadData() {
         viewModel.loadItems().observe(viewLifecycleOwner, Observer {
+            binding.emptyList = it.isEmpty()
             adapter.setData(it)
         })
     }
