@@ -10,7 +10,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import io.mns.androidlib.isDark
-import io.mns.androidlib.toggleTheme
 import io.mns.base.app.IS_DARK
 import io.mns.base.app.R
 import io.mns.base.app.THEME_PREFS_NAME
@@ -27,10 +26,10 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
         sharedPreferences =
             requireContext().applicationContext.getSharedPreferences(THEME_PREFS_NAME, Context.MODE_PRIVATE)
         observeBack()
-        handleTheme()
+        handleThemeChange()
     }
 
-    private fun handleTheme() {
+    private fun handleThemeChange() {
         viewModel.toggleTheme.observe(
             viewLifecycleOwner,
             Observer {
