@@ -5,6 +5,7 @@
     <color name="colorAccent">#2196F3</color>
     <color name="circleColor">#90CAF9</color>
     <color name="textGrey">#FFF</color>
+    <color name="white">#FFF</color>
     <color name="hintColor">#8DA0AF</color>
     <color name="bottomBackground">#102027</color>
     <color name="bottomIndicator">#37474f</color>
