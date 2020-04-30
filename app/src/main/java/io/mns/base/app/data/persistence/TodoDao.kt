@@ -6,7 +6,7 @@ import io.mns.base.app.data.TodoItem
 
 @Dao
 interface TodoDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTodo(todo: TodoItem)
 
     @Delete
