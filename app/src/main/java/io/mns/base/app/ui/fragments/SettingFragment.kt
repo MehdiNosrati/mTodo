@@ -3,6 +3,7 @@ package io.mns.base.app.ui.fragments
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.core.content.edit
 import androidx.fragment.app.viewModels
@@ -14,6 +15,7 @@ import io.mns.base.app.IS_DARK
 import io.mns.base.app.R
 import io.mns.base.app.THEME_PREFS_NAME
 import io.mns.base.app.databinding.FragmentSettingBinding
+import io.mns.base.app.ui.MainActivity
 import io.mns.base.app.ui.viewmodels.SettingViewModel
 
 class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_setting) {
@@ -35,7 +37,11 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
                 sharedPreferences.edit {
                     putBoolean(IS_DARK, !resources.isDark())
                 }
-                resources.toggleTheme()
+                Handler().postDelayed({
+                    if (activity != null) {
+                        (activity as MainActivity).toggleTheme()
+                    }
+                }, 200)
             }
         })
 
