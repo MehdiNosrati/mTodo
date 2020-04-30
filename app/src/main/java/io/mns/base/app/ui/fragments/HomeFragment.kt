@@ -53,7 +53,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
             Observer {
                 if (it) {
                     viewModel.addHandled()
-                    AddFragment(::addTodo).show(parentFragmentManager, ADD_FRAGMENT_TAG)
+                    AddFragment.getInstance(::addTodo).show(parentFragmentManager, ADD_FRAGMENT_TAG)
                 }
             }
         )
