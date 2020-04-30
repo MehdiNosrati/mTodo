@@ -9,6 +9,7 @@ import java.util.*
 class TodoRepository(private val todoDao: TodoDao, private val doneDao: DoneDao) {
     private val todoMediator = MediatorLiveData<List<TodoItem>>()
     private val doneMediator = MediatorLiveData<List<DoneItem>>()
+
     suspend fun insertTodoItem(todo: TodoItem) {
         todoDao.insertTodo(todo)
     }
@@ -18,6 +19,11 @@ class TodoRepository(private val todoDao: TodoDao, private val doneDao: DoneDao)
         return todoMediator
     }
 
+    fun loadDoneItems(): LiveData<List<DoneItem>> {
+        doneMediator.addSource(doneDao.getDoneItems(), doneMediator::postValue)
+        return doneMediator
+    }
+
     suspend fun done(item: TodoItem) {
         todoDao.done(item)
         insertDoneItem(DoneItem(item.id, Date().time, item.title))
@@ -25,10 +31,5 @@ class TodoRepository(private val todoDao: TodoDao, private val doneDao: DoneDao)
 
     private suspend fun insertDoneItem(item: DoneItem) {
         doneDao.insert(item)
-    }
-
-    fun loadDoneItems(): LiveData<List<DoneItem>> {
-        doneMediator.addSource(doneDao.getDoneItems(), doneMediator::postValue)
-        return doneMediator
     }
 }
