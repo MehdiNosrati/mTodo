@@ -9,17 +9,16 @@
         android:name="io.mns.base.app.ui.fragments.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home">
-
         <action
             android:id="@+id/action_homeFragment_to_doneFragment"
-            app:destination="@id/doneFragment"/>
+            app:destination="@id/doneFragment" />
         <action
             android:id="@+id/action_homeFragment_to_settingFragment"
             app:destination="@id/settingFragment"
             app:enterAnim="@anim/nav_enter"
             app:exitAnim="@anim/nav_exit"
             app:popEnterAnim="@anim/nav_pop_enter"
-            app:popExitAnim="@anim/nav_pop_exit"/>
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
     <fragment
         android:id="@+id/doneFragment"
@@ -30,7 +29,7 @@
             android:id="@+id/action_doneFragment_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_doneFragment_to_settingFragment"
             app:destination="@id/settingFragment"
@@ -39,7 +38,7 @@
             app:popEnterAnim="@anim/nav_pop_enter"
             app:popExitAnim="@anim/nav_pop_exit"
             app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
