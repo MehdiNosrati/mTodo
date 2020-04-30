@@ -32,6 +32,7 @@
         app:sideMargins="8dp"
         app:indicatorRadius="24dp"
         app:itemPadding="4dp"
+        app:itemFontFamily="@font/vazir"
         app:iconSize="32dp"
         app:menu="@menu/bottom_menu"/>
 
