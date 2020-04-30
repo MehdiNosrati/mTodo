@@ -23,14 +23,21 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainViewModel>()
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        if (viewModel.bitmap != null) {
-            themeChanged()
-        } else {
-            binding.imageView.isVisible = false
-        }
+        init()
+    }
+
+    override fun onBackPressed() {
+        if (navController.navigateUp()) {
+            binding.bottomBar.setActiveItem(0)
+        } else finish()
+    }
+
+    private fun init() {
+        handleRecreateAnimation()
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         setBottomNavListener()
     }
@@ -44,17 +51,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (navController.navigateUp()) {
-            binding.bottomBar.setActiveItem(0)
-        } else finish()
-    }
-
     fun hideBottomNav() {
         binding.bottomBar.animate().apply {
             translationY(resources.getDimensionPixelSize(R.dimen.bottom_nav_height).toFloat())
             duration = 300
             start()
+        }
+    }
+
+    fun showBottomNav() {
+        binding.bottomBar.visibility = View.VISIBLE
+        if (binding.bottomBar.translationY != 0f) {
+            binding.bottomBar.animate().apply {
+                translationY(0f)
+                duration = 300
+                start()
+            }
+        }
+    }
+
+    private fun handleRecreateAnimation() {
+        if (viewModel.bitmap != null) {
+            themeChanged()
+        } else {
+            binding.imageView.isVisible = false
         }
     }
 
@@ -102,16 +122,5 @@ class MainActivity : AppCompatActivity() {
         val canvas = Canvas(viewModel.bitmap!!)
         binding.container.draw(canvas)
         resources.toggleTheme()
-    }
-
-    fun showBottomNav() {
-        binding.bottomBar.visibility = View.VISIBLE
-        if (binding.bottomBar.translationY != 0f) {
-            binding.bottomBar.animate().apply {
-                translationY(0f)
-                duration = 300
-                start()
-            }
-        }
     }
 }
