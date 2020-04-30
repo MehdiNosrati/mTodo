@@ -13,5 +13,5 @@
     <string name="settings">تنظیمات</string>
     <string name="dark_theme">تغییر پوسته</string>
     <string name="no_todo">همه کارها انجام شدن</string>
-    <string name="no_done">هیچ کاری نکردی :(</string>
+    <string name="no_done">هیچ کاری نکردی</string>
 </resources>
