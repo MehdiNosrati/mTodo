@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.databinding.ItemDoneBinding
 
-class DoneAdapter() :
+class DoneAdapter :
     RecyclerView.Adapter<DoneAdapter.DoneViewHolder>() {
     private var data: List<DoneItem> = mutableListOf()
 
