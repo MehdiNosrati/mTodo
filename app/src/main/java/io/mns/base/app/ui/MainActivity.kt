@@ -1,5 +1,6 @@
 package io.mns.base.app.ui
 
+import android.animation.AnimatorSet
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Bundle
@@ -13,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import io.mns.androidlib.animateStatusBarForTheme
 import io.mns.androidlib.toggleTheme
 import io.mns.base.app.R
 import io.mns.base.app.databinding.ActivityMainBinding
@@ -101,13 +103,19 @@ class MainActivity : AppCompatActivity() {
                         binding.imageView.setImageDrawable(null)
                         binding.imageView.isVisible = false
                     }
-                    anim.start()
+                    AnimatorSet().apply {
+                        playTogether(
+                            animateStatusBarForTheme(),
+                            anim
+                        )
+                        start()
+                    }
                 } catch (e: Exception) {
                     binding.imageView.isVisible = false
                     binding.imageView.setImageBitmap(null)
                 }
             },
-            50
+            10
         )
     }
 

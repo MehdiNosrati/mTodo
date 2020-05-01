@@ -3,6 +3,7 @@ package io.mns.androidlib
 
 import android.animation.Animator
 import android.animation.ValueAnimator
+import android.graphics.Color
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
@@ -35,3 +36,13 @@ val AppCompatActivity.statusBarAnimator: Animator
 val AppCompatActivity.navigationBarAnimator: Animator
     get() = ValueAnimator.ofArgb(TRANSPARENT, window.navigationBarColor)
         .animatedValue(window::setNavigationBarColor)
+
+fun AppCompatActivity.animateStatusBarForTheme(): Animator {
+    return if (resources.isDark()) {
+        ValueAnimator.ofArgb(Color.parseColor("#CCCCCC"), Color.parseColor("#102027"))
+            .animatedValue(window::setStatusBarColor)
+    } else {
+        ValueAnimator.ofArgb(Color.parseColor("#102027"), Color.parseColor("#CCCCCC"))
+            .animatedValue(window::setStatusBarColor)
+    }
+}
