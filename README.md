@@ -26,4 +26,3 @@
 - [ ] Custom theme colors
 - [ ] Cloud sync
 - [ ] Undo operation capability
-- [ ] Undo operation capability
