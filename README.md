@@ -6,6 +6,7 @@
   <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/MehdiNosrati/mTodo?style=for-the-badge">
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/MehdiNosrati/mTodo?style=for-the-badge">
 </p>
+![Validate Gradle Wrapper](https://github.com/MehdiNosrati/mTodo/workflows/Validate%20Gradle%20Wrapper/badge.svg)
 
 
 ### How it looks like
