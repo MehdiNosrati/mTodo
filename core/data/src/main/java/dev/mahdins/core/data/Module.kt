@@ -1,6 +1,5 @@
 package dev.mahdins.core.data
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import dagger.Module
@@ -20,6 +19,6 @@ object DataModule {
         Room.databaseBuilder(context, TodoDataBase::class.java, "todo_db").build()
 
     @Provides
-    fun provideTodoRepository(dataBase: TodoDataBase): TodoRepository =
-        LocalTodoRepository(dataBase.todoDao(), dataBase.doneDao())
+    fun provideTodoRepository(database: TodoDataBase): TodoRepository =
+        LocalTodoRepository(database.todoDao(), database.doneDao())
 }

@@ -8,3 +8,5 @@
 .cxx
 local.properties
 .idea
+build-logic/convention/build
+build-logic/build
