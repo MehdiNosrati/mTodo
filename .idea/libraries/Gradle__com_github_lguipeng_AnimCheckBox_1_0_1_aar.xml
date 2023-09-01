@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.lguipeng:AnimCheckBox:1.0.1@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/6626cef76311a6c8797626b7f0a8294e/jetified-AnimCheckBox-1.0.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/6626cef76311a6c8797626b7f0a8294e/jetified-AnimCheckBox-1.0.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/6626cef76311a6c8797626b7f0a8294e/jetified-AnimCheckBox-1.0.1/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.lguipeng/AnimCheckBox/1.0.1/553ef28d46a313dc2568501846a2047961a405d9/AnimCheckBox-1.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

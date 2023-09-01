@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mTodo.iml" filepath="$PROJECT_DIR$/.idea/modules/mTodo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.iml" filepath="$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.main.iml" filepath="$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/android-utilities/mTodo.android-utilities.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/mTodo.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/mTodo.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/mTodo.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/mTodo.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/mTodo.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/mTodo.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/mTodo.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/mTodo.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.main.iml" filepath="$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.test.iml" filepath="$PROJECT_DIR$/.idea/modules/mTodo.buildSrc.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.iml" filepath="$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.main.iml" filepath="$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.test.iml" filepath="$PROJECT_DIR$/.idea/modules/utilities/mTodo.utilities.test.iml" />
+    </modules>
+  </component>
+</project>
