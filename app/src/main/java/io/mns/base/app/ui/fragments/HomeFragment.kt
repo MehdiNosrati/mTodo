@@ -1,7 +1,6 @@
 package io.mns.base.app.ui.fragments
 
 import android.os.Bundle
-import android.os.Handler
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -61,7 +60,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
 
     private fun addTodo(title: String) {
         viewModel.insertItem(title)
-        Handler().post {
+        requireActivity().runOnUiThread {
             binding.list.layoutManager?.scrollToPosition(0)
         }
     }
@@ -84,11 +83,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home), 
     }
 
     override fun todoDone(todo: TodoItem) {
-        Handler().postDelayed(
-            {
-                viewModel.done(todo)
-            },
-            800
-        )
+        requireActivity().runOnUiThread {
+            viewModel.done(todo)
+        }
     }
 }

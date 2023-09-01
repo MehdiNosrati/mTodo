@@ -3,7 +3,6 @@ package io.mns.base.app.ui
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Bundle
-import android.os.Handler
 import android.view.View
 import android.view.ViewAnimationUtils
 import androidx.activity.viewModels
@@ -30,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         init()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (navController.navigateUp()) {
             binding.bottomBar.setActiveItem(0)
@@ -74,41 +74,38 @@ class MainActivity : AppCompatActivity() {
         if (viewModel.bitmap != null) {
             themeChanged()
         } else {
-            binding.imageView.isVisible = false
+            binding.imageView.visibility = View.INVISIBLE
         }
     }
 
     private fun themeChanged() {
-        Handler().postDelayed(
-            {
-                try {
-                    binding.imageView.setImageBitmap(viewModel.bitmap)
-                    binding.imageView.isVisible = true
-                    val w = binding.container.measuredWidth
-                    val h = binding.container.measuredHeight
-                    val finalRadius = hypot(w.toFloat(), h.toFloat())
-                    val cx = resources.getDimensionPixelSize(R.dimen.moon_left)
-                    val cy = resources.getDimensionPixelSize(R.dimen.moon_top)
-                    val anim = ViewAnimationUtils.createCircularReveal(
-                        binding.imageView,
-                        cx,
-                        cy,
-                        finalRadius,
-                        0f
-                    )
-                    anim.duration = 400L
-                    anim.doOnEnd {
-                        binding.imageView.setImageDrawable(null)
-                        binding.imageView.isVisible = false
-                    }
-                    anim.start()
-                } catch (e: Exception) {
-                    binding.imageView.isVisible = false
-                    binding.imageView.setImageBitmap(null)
+        runOnUiThread {
+            try {
+                binding.imageView.setImageBitmap(viewModel.bitmap)
+                binding.imageView.isVisible = true
+                val w = binding.container.measuredWidth
+                val h = binding.container.measuredHeight
+                val finalRadius = hypot(w.toFloat(), h.toFloat())
+                val cx = resources.getDimensionPixelSize(R.dimen.moon_left)
+                val cy = resources.getDimensionPixelSize(R.dimen.moon_top)
+                val anim = ViewAnimationUtils.createCircularReveal(
+                    binding.imageView,
+                    cx,
+                    cy,
+                    0f,
+                    finalRadius
+                )
+                anim.duration = 100L
+                anim.doOnEnd {
+                    binding.imageView.setImageDrawable(null)
+                    binding.imageView.visibility = View.INVISIBLE
                 }
-            },
-            50
-        )
+                anim.start()
+            } catch (e: Exception) {
+                binding.imageView.visibility = View.INVISIBLE
+                binding.imageView.setImageBitmap(null)
+            }
+        }
     }
 
     fun toggleTheme() {

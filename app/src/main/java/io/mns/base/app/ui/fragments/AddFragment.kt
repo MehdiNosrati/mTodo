@@ -1,7 +1,6 @@
 package io.mns.base.app.ui.fragments
 
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,12 +43,9 @@ class AddFragment private constructor(private val insert: OnInsert) : BottomShee
             Observer {
                 if (it) {
                     viewModel.backHandled()
-                    Handler().postDelayed(
-                        {
-                            dismiss()
-                        },
-                        200
-                    )
+                    requireActivity().runOnUiThread {
+                        dismiss()
+                    }
                 }
             }
         )
@@ -64,13 +60,10 @@ class AddFragment private constructor(private val insert: OnInsert) : BottomShee
                     val title = binding.title
                     if (title != null && title.isNotEmpty()) {
                         binding.add.setOnClickListener(null)
-                        Handler().postDelayed(
-                            {
-                                insert(title)
-                                dismiss()
-                            },
-                            200
-                        )
+                        requireActivity().runOnUiThread {
+                            insert(title)
+                            dismiss()
+                        }
                     }
                 }
             }

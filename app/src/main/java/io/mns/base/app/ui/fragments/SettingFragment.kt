@@ -3,7 +3,6 @@ package io.mns.base.app.ui.fragments
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
 import android.view.View
 import androidx.core.content.edit
 import androidx.fragment.app.viewModels
@@ -24,7 +23,10 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.vm = viewModel
         sharedPreferences =
-            requireContext().applicationContext.getSharedPreferences(THEME_PREFS_NAME, Context.MODE_PRIVATE)
+            requireContext().applicationContext.getSharedPreferences(
+                THEME_PREFS_NAME,
+                Context.MODE_PRIVATE
+            )
         observeBack()
         handleThemeChange()
     }
@@ -35,17 +37,14 @@ class SettingFragment : BaseFragment<FragmentSettingBinding>(R.layout.fragment_s
             Observer {
                 if (it) {
                     viewModel.themeToggled()
+                    if (activity != null) {
+                        requireActivity().runOnUiThread {
+                            (activity as MainActivity).toggleTheme()
+                        }
+                    }
                     sharedPreferences.edit {
                         putBoolean(IS_DARK, !resources.isDark())
                     }
-                    Handler().postDelayed(
-                        {
-                            if (activity != null) {
-                                (activity as MainActivity).toggleTheme()
-                            }
-                        },
-                        200
-                    )
                 }
             }
         )
