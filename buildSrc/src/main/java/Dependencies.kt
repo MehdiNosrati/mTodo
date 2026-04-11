@@ -1,7 +1,6 @@
 object Sdk {
     const val MIN_SDK_VERSION = 21
-    const val TARGET_SDK_VERSION = 33
-    const val COMPILE_SDK_VERSION = 30
+    const val COMPILE_SDK_VERSION = 36
 }
 
 object Versions {
@@ -13,26 +12,27 @@ object Versions {
     const val LEGACY_SUPPORT = "1.0.0"
     const val COLLECTION_KTX = "1.1.0"
     const val FRAGMENT_KTX = "1.2.4"
-    const val NAVIGATION = "2.3.0-alpha05"
-    const val ROOM = "2.2.5"
+    const val NAVIGATION = "2.8.5"
+    const val ROOM = "2.6.1"
     const val ESPRESSO_CORE = "3.2.0"
     const val JUNIT = "4.13"
     const val KTLINT = "0.36.0"
     const val LIFE_CYCLE = "2.2.0"
     const val ARCH = "2.1.0"
     const val MULTI_DEX = "2.0.1"
-    const val KOIN = "2.1.5"
+    const val KOIN = "3.5.6"
     const val MATERIAL_DESIGN = "1.2.0-alpha06"
     const val CHECK_BOX = "1.0.1"
     const val BOTTOM_BAR = "1.7.7"
 }
 
 object BuildPluginsVersion {
-    const val AGP = "3.6.3"
-    const val DETEKT = "1.8.0"
-    const val KOTLIN = "1.3.72"
-    const val KTLINT = "9.2.1"
-    const val VERSIONS_PLUGIN = "0.28.0"
+    const val AGP = "8.7.3"
+    const val DETEKT = "1.23.7"
+    const val KOTLIN = "1.9.22"
+    const val KTLINT = "12.1.1"
+    const val VERSIONS_PLUGIN = "0.51.0"
+    const val KSP = "1.9.22-1.0.16"
 }
 
 object SupportLibs {
@@ -81,8 +81,9 @@ object LifeCycle {
 }
 
 object Koin {
-    const val CORE = "org.koin:koin-android:${Versions.KOIN}"
-    const val TEST = "org.koin:koin-test:$${Versions.KOIN}"
+    const val ANDROID = "io.insert-koin:koin-android:${Versions.KOIN}"
+    const val CORE = "io.insert-koin:koin-core:${Versions.KOIN}"
+    const val TEST = "io.insert-koin:koin-test:${Versions.KOIN}"
 }
 
 object CheckBox {

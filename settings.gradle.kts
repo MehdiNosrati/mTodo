@@ -13,8 +13,10 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        jcenter()
     }
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 rootProject.name = ("mTodo")
@@ -22,5 +24,4 @@ rootProject.name = ("mTodo")
 include(
     "app",
     "android-utilities",
-    "utilities"
 )

@@ -4,6 +4,11 @@ plugins {
     id("com.android.application") version BuildPluginsVersion.AGP apply false
     id("com.android.library") version BuildPluginsVersion.AGP apply false
     kotlin("android") version BuildPluginsVersion.KOTLIN apply false
+    kotlin("jvm") version BuildPluginsVersion.KOTLIN apply false
+    id("org.jetbrains.kotlin.plugin.parcelize") version BuildPluginsVersion.KOTLIN apply false
+    id("org.jetbrains.kotlin.android.extensions") version BuildPluginsVersion.KOTLIN apply false
+    kotlin("kapt") version BuildPluginsVersion.KOTLIN apply false
+    id("com.google.devtools.ksp") version BuildPluginsVersion.KSP apply false
     id("io.gitlab.arturbosch.detekt") version BuildPluginsVersion.DETEKT
     id("org.jlleitschuh.gradle.ktlint") version BuildPluginsVersion.KTLINT
     id("com.github.ben-manes.versions") version BuildPluginsVersion.VERSIONS_PLUGIN
@@ -14,7 +19,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
         maven {
             setUrl("https://jitpack.io")
         }
@@ -24,7 +28,6 @@ allprojects {
 buildscript {
     repositories {
         google()
-        jcenter()
         maven {
             setUrl("https://jitpack.io")
         }
@@ -36,12 +39,26 @@ buildscript {
 }
 
 subprojects {
-    apply {
-        plugin("io.gitlab.arturbosch.detekt")
-        plugin("org.jlleitschuh.gradle.ktlint")
+    // Only apply quality plugins to subprojects that have Android or Kotlin applied
+    pluginManager.withPlugin("com.android.application") {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+        apply(plugin = "org.jlleitschuh.gradle.ktlint")
+        configureQualityPlugins(this@subprojects)
     }
+    pluginManager.withPlugin("com.android.library") {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+        apply(plugin = "org.jlleitschuh.gradle.ktlint")
+        configureQualityPlugins(this@subprojects)
+    }
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+        apply(plugin = "org.jlleitschuh.gradle.ktlint")
+        configureQualityPlugins(this@subprojects)
+    }
+}
 
-    ktlint {
+fun configureQualityPlugins(project: Project) {
+    project.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         debug.set(false)
         version.set(Versions.KTLINT)
         verbose.set(true)
@@ -55,12 +72,12 @@ subprojects {
         }
     }
 
-    detekt {
-        config = rootProject.files("config/detekt/detekt.yml")
+    project.configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+        config = project.rootProject.files("config/detekt/detekt.yml")
         reports {
             html {
-                enabled = true
-                destination = file("build/reports/detekt.html")
+                required.set(true)
+                outputLocation.set(project.file("build/reports/detekt.html"))
             }
         }
     }

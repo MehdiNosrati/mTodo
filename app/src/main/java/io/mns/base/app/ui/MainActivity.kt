@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         init()
     }
 
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         handleRecreateAnimation()
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         setBottomNavListener()
+        showBottomNav()
     }
 
     private fun setBottomNavListener() {
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun hideBottomNav() {
+        if (!::binding.isInitialized) return
         binding.bottomBar.animate().apply {
             translationY(resources.getDimensionPixelSize(R.dimen.bottom_nav_height).toFloat())
             duration = 300
@@ -60,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showBottomNav() {
+        if (!::binding.isInitialized) return
         binding.bottomBar.visibility = View.VISIBLE
         if (binding.bottomBar.translationY != 0f) {
             binding.bottomBar.animate().apply {

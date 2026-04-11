@@ -8,15 +8,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isInvisible
 import io.mns.androidlib.*
 import io.mns.base.app.R
-import kotlinx.android.synthetic.main.activity_launch.*
+import io.mns.base.app.databinding.ActivityLaunchBinding
 import kotlin.math.hypot
 
 class LaunchActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLaunchBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         preAnimationSetup()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_launch)
+        binding = ActivityLaunchBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         performCircularReveal()
         startMain()
     }
@@ -34,10 +36,10 @@ class LaunchActivity : AppCompatActivity() {
     // launch application with circular reveal animation
     private fun performCircularReveal() {
         if (!hasSourceBounds) {
-            rootContentLayout.isInvisible = false
+            binding.rootContentLayout.isInvisible = false
         } else {
             sourceBounds { sourceBounds ->
-                rootContentLayout.run {
+                binding.rootContentLayout.run {
                     screenBounds { rootLayoutBounds ->
                         // Verify if sourceBounds is valid
                         if (rootLayoutBounds.contains(sourceBounds)) {

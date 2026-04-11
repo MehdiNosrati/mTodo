@@ -1,33 +1,29 @@
-version = LibraryAndroidCoordinates.LIBRARY_VERSION
-
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("kotlin-android-extensions")
     id("maven-publish")
 }
 
+version = LibraryAndroidCoordinates.LIBRARY_VERSION
+
 android {
-    compileSdkVersion(Sdk.COMPILE_SDK_VERSION)
+    namespace = "io.mns.androidlib"
+    compileSdk = Sdk.COMPILE_SDK_VERSION
 
     defaultConfig {
-        minSdkVersion(Sdk.MIN_SDK_VERSION)
-        targetSdkVersion(Sdk.TARGET_SDK_VERSION)
-
-        versionCode = LibraryAndroidCoordinates.LIBRARY_VERSION_CODE
-        versionName = LibraryAndroidCoordinates.LIBRARY_VERSION
+        minSdk = Sdk.MIN_SDK_VERSION
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    kotlin {
+        jvmToolchain(17)
     }
 
     buildTypes {
@@ -40,9 +36,13 @@ android {
         }
     }
 
-    lintOptions {
-        isWarningsAsErrors = true
-        isAbortOnError = true
+    publishing {
+        singleVariant("release")
+    }
+
+    lint {
+        warningsAsErrors = true
+        abortOnError = true
     }
 }
 
@@ -58,10 +58,10 @@ dependencies {
     androidTestImplementation(AndroidTestingLib.ANDROIDX_TEST_EXT_JUNIT)
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            afterEvaluate {
                 from(components["release"])
             }
         }

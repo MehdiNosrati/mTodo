@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.TodoRepository
-import org.koin.core.KoinComponent
-import org.koin.core.inject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class DoneViewModel(application: Application) : AndroidViewModel(application), KoinComponent {
     private val repository: TodoRepository by inject()

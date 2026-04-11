@@ -1,17 +1,21 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("kotlin-android-extensions")
-    id("androidx.navigation.safeargs.kotlin")
     kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
-    compileSdkVersion(Sdk.COMPILE_SDK_VERSION)
+    namespace = "io.mns.base.app"
+    compileSdk = Sdk.COMPILE_SDK_VERSION
+
+    kotlin {
+        jvmToolchain(17)
+    }
 
     defaultConfig {
-        minSdkVersion(Sdk.MIN_SDK_VERSION)
-        targetSdkVersion(Sdk.TARGET_SDK_VERSION)
+        minSdk = Sdk.MIN_SDK_VERSION
+        targetSdk = Sdk.COMPILE_SDK_VERSION
         multiDexEnabled = true
         applicationId = AppCoordinates.APP_ID
         versionCode = AppCoordinates.APP_VERSION_CODE
@@ -19,16 +23,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    dataBinding {
-        isEnabled = true
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildTypes {
@@ -41,11 +42,6 @@ android {
             )
         }
     }
-
-    lintOptions {
-        isWarningsAsErrors = true
-        isAbortOnError = true
-    }
 }
 
 dependencies {
@@ -53,7 +49,6 @@ dependencies {
 
     // local modules
     implementation(project(":android-utilities"))
-    implementation(project(":utilities"))
 
     // support
     implementation(SupportLibs.ANDROIDX_APPCOMPAT)
@@ -72,7 +67,7 @@ dependencies {
 
     // room
     implementation(Room.RUNTIME)
-    kapt(Room.COMPILER)
+    ksp(Room.COMPILER)
     implementation(Room.KTX)
 
     // view model
@@ -82,6 +77,7 @@ dependencies {
     implementation(LifeCycle.COMPILER)
 
     // koin
+    implementation(Koin.ANDROID)
     implementation(Koin.CORE)
 
     // animated checkbox
