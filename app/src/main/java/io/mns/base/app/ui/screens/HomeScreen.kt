@@ -1,44 +1,86 @@
 package io.mns.base.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.mns.base.app.R
 import io.mns.base.app.data.TodoItem
+import io.mns.base.app.data.TodoListSection
 import io.mns.base.app.ui.viewmodels.HomeViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val Brand1 = Color(0xFF6366F1)
+private val Brand2 = Color(0xFFA78BFA)
+
+private fun brandBrush(
+    start: Offset = Offset.Zero,
+    end: Offset = Offset.Infinite
+) = Brush.linearGradient(colors = listOf(Brand1, Brand2), start = start, end = end)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onSettingsClick: () -> Unit,
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    val items by viewModel.loadItems().observeAsState(initial = emptyList())
+    val sections by viewModel.sections.observeAsState(initial = emptyList())
     var showAddDialog by remember { mutableStateOf(false) }
+    var fabVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { fabVisible = true }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.to_be_done),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                        style = TextStyle(
+                            brush = brandBrush(),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     )
                 },
@@ -52,18 +94,22 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = Color.Transparent
                 )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                shape = MaterialTheme.shapes.extraLarge
+            AnimatedVisibility(
+                visible = fabVisible,
+                enter = scaleIn(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    initialScale = 0.5f
+                ) + fadeIn(tween(300))
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+                GradientFab(onClick = { showAddDialog = true })
             }
         },
         floatingActionButtonPosition = FabPosition.Center
@@ -73,19 +119,36 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (items.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.no_todo),
-                    modifier = Modifier.align(Alignment.Center)
-                )
+            BackgroundOrbs()
+
+            if (sections.isEmpty()) {
+                EmptyState(modifier = Modifier.align(Alignment.Center))
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
                 ) {
-                    items(items, key = { it.id }) { item ->
-                        TodoItemRow(item = item, onDone = { viewModel.done(item) })
+                    var itemIndex = 0
+                    sections.forEach { section ->
+                        when (section) {
+                            is TodoListSection.Header -> stickyHeader(key = "h_${section.hourStartMs}") {
+                                TimeSegmentHeader(label = section.label)
+                            }
+                            is TodoListSection.Item -> {
+                                val index = itemIndex++
+                                item(key = section.todo.id) {
+                                    StaggeredItem(index = index) {
+                                        TodoItemRow(
+                                            item = section.todo,
+                                            onDone = { viewModel.done(section.todo) },
+                                            modifier = Modifier
+                                                .padding(horizontal = 16.dp, vertical = 5.dp)
+                                                .animateItem()
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -104,32 +167,315 @@ fun HomeScreen(
 }
 
 @Composable
-fun TodoItemRow(item: TodoItem, onDone: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+fun StaggeredItem(index: Int, content: @Composable () -> Unit) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(minOf(index * 60L, 360L))
+        visible = true
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(320)) + slideInVertically(
+            initialOffsetY = { it / 3 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun BackgroundOrbs() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .size(300.dp)
+                .offset(x = 90.dp, y = (-70).dp)
+                .align(Alignment.TopEnd)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Brand1.copy(alpha = 0.09f), Color.Transparent)
+                    ),
+                    CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(240.dp)
+                .offset(x = (-70).dp, y = 30.dp)
+                .align(Alignment.BottomStart)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Brand2.copy(alpha = 0.07f), Color.Transparent)
+                    ),
+                    CircleShape
+                )
+        )
+    }
+}
+
+@Composable
+fun GradientFab(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.93f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "fabScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .size(62.dp)
+            .shadow(
+                elevation = if (pressed) 6.dp else 14.dp,
+                shape = CircleShape,
+                spotColor = Brand1.copy(alpha = 0.4f)
+            )
+            .clip(CircleShape)
+            .background(brandBrush())
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(bounded = true),
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "Add",
+            tint = Color.White,
+            modifier = Modifier.size(26.dp)
+        )
+    }
+}
+
+@Composable
+fun TimeSegmentHeader(label: String) {
+    val transition = rememberInfiniteTransition(label = "headerShimmer")
+    val shimmerPos by transition.animateFloat(
+        initialValue = -0.5f,
+        targetValue = 1.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmerPos"
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Brand1.copy(alpha = 0.2f + shimmerPos.coerceIn(0f, 0.3f)),
+                            Brand2.copy(alpha = 0.4f)
+                        )
+                    )
+                )
+        )
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 12.dp),
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.4.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Brand2.copy(alpha = 0.4f),
+                            Brand1.copy(alpha = 0.2f + shimmerPos.coerceIn(0f, 0.3f)),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+    }
+}
+
+@Composable
+fun TodoItemRow(item: TodoItem, onDone: () -> Unit, modifier: Modifier = Modifier) {
+    val btnInteraction = remember { MutableInteractionSource() }
+    val btnPressed by btnInteraction.collectIsPressedAsState()
+    var checked by remember { mutableStateOf(false) }
+
+    // Press-scale: only active before checked
+    val btnScale by animateFloatAsState(
+        targetValue = if (btnPressed && !checked) 0.80f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "btnScale"
+    )
+
+    // Fill circle scales in when checked
+    val fillScale by animateFloatAsState(
+        targetValue = if (checked) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "fillScale"
+    )
+
+    // Checkmark fades in after fill
+    val checkAlpha by animateFloatAsState(
+        targetValue = if (checked) 1f else 0f,
+        animationSpec = tween(180, delayMillis = 100),
+        label = "checkAlpha"
+    )
+
+    // Trigger onDone after the fill animation completes
+    LaunchedEffect(checked) {
+        if (checked) {
+            delay(380)
+            onDone()
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Brand1.copy(alpha = 0.10f),
+                ambientColor = Brand1.copy(alpha = 0.05f)
+            )
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(62.dp)
+                    .background(
+                        brandBrush(start = Offset(0f, 0f), end = Offset(0f, Float.POSITIVE_INFINITY)),
+                        RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
+                    )
+            )
             Text(
                 text = item.title,
-                modifier = Modifier.weight(1f),
-                fontSize = 16.sp,
-                maxLines = 1
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp, end = 8.dp),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Checkbox(
-                checked = false,
-                onCheckedChange = { if (it) onDone() },
-                colors = CheckboxDefaults.colors(
-                    uncheckedColor = MaterialTheme.colorScheme.primary,
-                    checkedColor = MaterialTheme.colorScheme.secondary
+            Box(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .graphicsLayer { scaleX = btnScale; scaleY = btnScale }
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .border(width = 1.5.dp, brush = brandBrush(), shape = CircleShape)
+                    .clickable(
+                        interactionSource = btnInteraction,
+                        indication = ripple(bounded = true),
+                        enabled = !checked,
+                        onClick = { checked = true }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Gradient fill that scales in
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .graphicsLayer { scaleX = fillScale; scaleY = fillScale }
+                        .clip(CircleShape)
+                        .background(brandBrush())
                 )
+                // Checkmark fades in on top
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = checkAlpha),
+                    modifier = Modifier.size(16.dp)
+                )
+                // Empty dot shown when unchecked
+                if (!checked) {
+                    Box(
+                        modifier = Modifier
+                            .size(9.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.outlineVariant)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(modifier: Modifier = Modifier) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = visible,
+        enter = fadeIn(tween(400)) + scaleIn(
+            initialScale = 0.85f,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .shadow(elevation = 12.dp, shape = CircleShape, spotColor = Brand1.copy(alpha = 0.3f))
+                    .background(brandBrush(), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(38.dp)
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.no_todo),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Tap + to add something",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -138,26 +484,76 @@ fun TodoItemRow(item: TodoItem, onDone: () -> Unit) {
 @Composable
 fun AddTodoDialog(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
+    val enabled = text.isNotBlank()
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Todo") },
+        title = {
+            Text(
+                text = "New Todo",
+                style = TextStyle(
+                    brush = brandBrush(),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+        },
         text = {
-            TextField(
+            OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("What needs to be done?") }
+                placeholder = { Text("What needs to be done?") },
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Brand1,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                ),
+                singleLine = true
             )
         },
         confirmButton = {
-            TextButton(onClick = { if (text.isNotBlank()) onAdd(text) }) {
-                Text("Add")
+            val btnInteraction = remember { MutableInteractionSource() }
+            val btnPressed by btnInteraction.collectIsPressedAsState()
+            val btnScale by animateFloatAsState(
+                targetValue = if (btnPressed) 0.95f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "addBtnScale"
+            )
+            Box(
+                modifier = Modifier
+                    .graphicsLayer { scaleX = btnScale; scaleY = btnScale }
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (enabled) brandBrush()
+                        else Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.outlineVariant,
+                                MaterialTheme.colorScheme.outlineVariant
+                            )
+                        )
+                    )
+                    .clickable(
+                        interactionSource = btnInteraction,
+                        indication = ripple(bounded = true),
+                        enabled = enabled,
+                        onClick = { onAdd(text) }
+                    )
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = "Add",
+                    color = if (enabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp)
     )
 }

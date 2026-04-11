@@ -30,10 +30,13 @@ class MainActivity : ComponentActivity() {
             }
 
             MTodoTheme(darkTheme = isDark) {
-                MainScreen(onToggleTheme = {
-                    isDark = !isDark
-                    sharedPreferences.edit { putBoolean(IS_DARK, isDark) }
-                })
+                MainScreen(
+                    isDark = isDark,
+                    onToggleTheme = {
+                        isDark = !isDark
+                        sharedPreferences.edit { putBoolean(IS_DARK, isDark) }
+                    }
+                )
             }
         }
     }

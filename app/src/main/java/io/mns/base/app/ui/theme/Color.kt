@@ -2,16 +2,27 @@ package io.mns.base.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Primary = Color(0xFFFFFFFF)
-val PrimaryDark = Color(0xFFCCCCCC)
-val Accent = Color(0xFF2196F3)
-val CircleColor = Color(0xFF90CAF9)
-val TextGrey = Color(0xFF455A64)
-val HintColor = Color(0xFFCCCCCC)
-val BottomBackground = Color(0xFFEEEEEE)
-val BottomIndicator = Color(0xFF90CAF9)
-val BottomIconTint = Color(0xFF455A64)
+// Brand — soft indigo → muted violet (classy, not aggressive)
+val Indigo400 = Color(0xFF818CF8)
+val Indigo500 = Color(0xFF6366F1)
+val Violet300 = Color(0xFFC4B5FD)
+val Violet400 = Color(0xFFA78BFA)
 
-val DarkPrimary = Color(0xFF121212)
-val DarkAccent = Color(0xFF90CAF9)
-val DarkText = Color(0xFFE0E0E0)
+// Done — emerald → teal
+val Emerald500 = Color(0xFF10B981)
+val Teal400 = Color(0xFF2DD4BF)
+
+// Light theme — warm off-white surfaces
+val LightBg = Color(0xFFF8FAFC)
+val LightSurface = Color(0xFFFFFFFF)
+val LightText = Color(0xFF0F172A)
+val LightMuted = Color(0xFF64748B)
+val LightOutline = Color(0xFFE2E8F0)
+
+// Dark theme — warm slate (not cold purple-black)
+val DarkBg = Color(0xFF0F172A)
+val DarkSurface = Color(0xFF1E293B)
+val DarkCard = Color(0xFF334155)
+val DarkText = Color(0xFFF1F5F9)
+val DarkMuted = Color(0xFF94A3B8)
+val DarkOutline = Color(0xFF334155)
