@@ -1,0 +1,4 @@
+-dontwarn io.mns.androidlib.ActivityExtensionsKt
+-dontwarn io.mns.androidlib.NotificationUtil
+-dontwarn io.mns.androidlib.ThemeUtilsKt
+-dontwarn io.mns.androidlib.ViewExtensionsKt
