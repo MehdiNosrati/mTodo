@@ -13,7 +13,7 @@ object Versions {
     const val COLLECTION_KTX = "1.1.0"
     const val FRAGMENT_KTX = "1.2.4"
     const val NAVIGATION = "2.8.5"
-    const val ROOM = "2.6.1"
+    const val ROOM = "2.7.2"
     const val ESPRESSO_CORE = "3.2.0"
     const val JUNIT = "4.13"
     const val KTLINT = "0.36.0"
@@ -33,12 +33,12 @@ object Versions {
 }
 
 object BuildPluginsVersion {
-    const val AGP = "8.7.3"
+    const val AGP = "9.1.0"
     const val DETEKT = "1.23.7"
-    const val KOTLIN = "1.9.24"
+    const val KOTLIN = "2.3.20"
     const val KTLINT = "12.1.1"
     const val VERSIONS_PLUGIN = "0.51.0"
-    const val KSP = "1.9.24-1.0.20"
+    const val KSP = "2.3.6"
 }
 
 object SupportLibs {

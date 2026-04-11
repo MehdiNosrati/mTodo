@@ -3,8 +3,8 @@ const val PUBLISHING_GROUP = "io.mns.mtodo"
 object AppCoordinates {
     const val APP_ID = "dev.mahdins.mtodo"
 
-    const val APP_VERSION_NAME = "2.0.0"
-    const val APP_VERSION_CODE = 26041101
+    const val APP_VERSION_NAME = "2.0.1"
+    const val APP_VERSION_CODE = 26041102
 }
 
 object LibraryAndroidCoordinates {

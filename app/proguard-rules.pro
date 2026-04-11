@@ -1,6 +1,9 @@
 # preserve the line number information for debugging stack traces.
 -keepattributes SourceFile,LineNumberTable
 
+# AGP 9.1 enables R8 repackaging to unnamed package by default; opt out to preserve stack traces
+-dontrepackage
+
 # Retrofit
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
@@ -29,12 +32,6 @@
 -keep class * extends androidx.room.RoomDatabase { *; }
 -keepclassmembers class * extends androidx.room.RoomDatabase {
     abstract *;
-}
-
-# DataBinding - BaseObservable subclasses and @Bindable members
--keep class * extends androidx.databinding.BaseObservable { *; }
--keepclassmembers class * extends androidx.databinding.BaseObservable {
-    @androidx.databinding.Bindable *;
 }
 
 # ViewModels - Koin resolves these reflectively

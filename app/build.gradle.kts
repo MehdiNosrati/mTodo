@@ -1,17 +1,16 @@
 plugins {
     id("com.android.application")
-    kotlin("android")
-    kotlin("kapt")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 android {
     namespace = "io.mns.base.app"
     compileSdk = Sdk.COMPILE_SDK_VERSION
-
-    kotlin {
-        jvmToolchain(17)
-    }
 
     defaultConfig {
         minSdk = Sdk.MIN_SDK_VERSION
@@ -24,12 +23,8 @@ android {
     }
 
     buildFeatures {
-        dataBinding = true
         viewBinding = true
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -49,8 +44,6 @@ android {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk7"))
-
     // local modules
     implementation(project(":android-utilities"))
 

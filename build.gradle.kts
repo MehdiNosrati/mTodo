@@ -3,11 +3,9 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 plugins {
     id("com.android.application") version BuildPluginsVersion.AGP apply false
     id("com.android.library") version BuildPluginsVersion.AGP apply false
-    kotlin("android") version BuildPluginsVersion.KOTLIN apply false
     kotlin("jvm") version BuildPluginsVersion.KOTLIN apply false
     id("org.jetbrains.kotlin.plugin.parcelize") version BuildPluginsVersion.KOTLIN apply false
-    id("org.jetbrains.kotlin.android.extensions") version BuildPluginsVersion.KOTLIN apply false
-    kotlin("kapt") version BuildPluginsVersion.KOTLIN apply false
+    id("org.jetbrains.kotlin.plugin.compose") version BuildPluginsVersion.KOTLIN apply false
     id("com.google.devtools.ksp") version BuildPluginsVersion.KSP apply false
     id("io.gitlab.arturbosch.detekt") version BuildPluginsVersion.DETEKT
     id("org.jlleitschuh.gradle.ktlint") version BuildPluginsVersion.KTLINT
@@ -84,7 +82,7 @@ fun configureQualityPlugins(project: Project) {
 }
 
 tasks.register("clean", Delete::class.java) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }
 
 tasks.withType<DependencyUpdatesTask> {
