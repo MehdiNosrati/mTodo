@@ -13,7 +13,9 @@ object KoinModules {
     val appModule = module {
 
         single {
-            Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db").build()
+            Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
+                .fallbackToDestructiveMigration()
+                .build()
         }
 
         single {
