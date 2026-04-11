@@ -1,127 +1,40 @@
 package io.mns.base.app.ui
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.content.Context
 import android.os.Bundle
-import android.view.View
-import android.view.ViewAnimationUtils
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.doOnEnd
-import androidx.core.view.isVisible
-import androidx.databinding.DataBindingUtil
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import io.mns.androidlib.toggleTheme
-import io.mns.base.app.R
-import io.mns.base.app.databinding.ActivityMainBinding
-import io.mns.base.app.ui.viewmodels.MainViewModel
-import kotlin.math.hypot
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import io.mns.androidlib.isDark
+import io.mns.base.app.IS_DARK
+import io.mns.base.app.THEME_PREFS_NAME
+import io.mns.base.app.ui.screens.MainScreen
+import io.mns.base.app.ui.theme.MTodoTheme
+import androidx.core.content.edit
 
-class MainActivity : AppCompatActivity() {
-    private val viewModel by viewModels<MainViewModel>()
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var navController: NavController
+class MainActivity : ComponentActivity() {
+    fun showBottomNav() {}
+    fun hideBottomNav() {}
+    fun toggleTheme() {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        init()
-    }
+        val sharedPreferences = getSharedPreferences(THEME_PREFS_NAME, Context.MODE_PRIVATE)
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (navController.navigateUp()) {
-            binding.bottomBar.setActiveItem(0)
-        } else finish()
-    }
+        setContent {
+            var isDark by remember {
+                mutableStateOf(sharedPreferences.getBoolean(IS_DARK, resources.isDark()))
+            }
 
-    private fun init() {
-        handleRecreateAnimation()
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        setBottomNavListener()
-        showBottomNav()
-    }
-
-    private fun setBottomNavListener() {
-        binding.bottomBar.onItemSelected = {
-            when (it) {
-                0 -> navController.navigate(R.id.action_doneFragment_to_homeFragment)
-                1 -> navController.navigate(R.id.action_homeFragment_to_doneFragment)
+            MTodoTheme(darkTheme = isDark) {
+                MainScreen(onToggleTheme = {
+                    isDark = !isDark
+                    sharedPreferences.edit { putBoolean(IS_DARK, isDark) }
+                })
             }
         }
-    }
-
-    fun hideBottomNav() {
-        if (!::binding.isInitialized) return
-        binding.bottomBar.animate().apply {
-            translationY(resources.getDimensionPixelSize(R.dimen.bottom_nav_height).toFloat())
-            duration = 300
-            start()
-        }
-    }
-
-    fun showBottomNav() {
-        if (!::binding.isInitialized) return
-        binding.bottomBar.visibility = View.VISIBLE
-        if (binding.bottomBar.translationY != 0f) {
-            binding.bottomBar.animate().apply {
-                translationY(0f)
-                duration = 300
-                start()
-            }
-        }
-    }
-
-    private fun handleRecreateAnimation() {
-        if (viewModel.bitmap != null) {
-            themeChanged()
-        } else {
-            binding.imageView.visibility = View.INVISIBLE
-        }
-    }
-
-    private fun themeChanged() {
-        runOnUiThread {
-            try {
-                binding.imageView.setImageBitmap(viewModel.bitmap)
-                binding.imageView.isVisible = true
-                val w = binding.container.measuredWidth
-                val h = binding.container.measuredHeight
-                val finalRadius = hypot(w.toFloat(), h.toFloat())
-                val cx = resources.getDimensionPixelSize(R.dimen.moon_left)
-                val cy = resources.getDimensionPixelSize(R.dimen.moon_top)
-                val anim = ViewAnimationUtils.createCircularReveal(
-                    binding.imageView,
-                    cx,
-                    cy,
-                    0f,
-                    finalRadius
-                )
-                anim.duration = 100L
-                anim.doOnEnd {
-                    binding.imageView.setImageDrawable(null)
-                    binding.imageView.visibility = View.INVISIBLE
-                }
-                anim.start()
-            } catch (e: Exception) {
-                binding.imageView.visibility = View.INVISIBLE
-                binding.imageView.setImageBitmap(null)
-            }
-        }
-    }
-
-    fun toggleTheme() {
-        if (binding.imageView.isVisible) {
-            return
-        }
-
-        val w = binding.container.measuredWidth
-        val h = binding.container.measuredHeight
-        viewModel.bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(viewModel.bitmap!!)
-        binding.container.draw(canvas)
-        resources.toggleTheme()
     }
 }

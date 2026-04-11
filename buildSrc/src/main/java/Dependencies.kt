@@ -24,15 +24,21 @@ object Versions {
     const val MATERIAL_DESIGN = "1.2.0-alpha06"
     const val CHECK_BOX = "1.0.1"
     const val BOTTOM_BAR = "1.7.7"
+    const val COMPOSE = "1.7.6"
+    const val COMPOSE_MATERIAL3 = "1.3.1"
+    const val ACTIVITY_COMPOSE = "1.9.3"
+    const val NAVIGATION_COMPOSE = "2.8.5"
+    const val COMPOSE_LIVEDATA = "1.7.6"
+    const val KOIN_COMPOSE = "3.5.6"
 }
 
 object BuildPluginsVersion {
     const val AGP = "8.7.3"
     const val DETEKT = "1.23.7"
-    const val KOTLIN = "1.9.22"
+    const val KOTLIN = "1.9.24"
     const val KTLINT = "12.1.1"
     const val VERSIONS_PLUGIN = "0.51.0"
-    const val KSP = "1.9.22-1.0.16"
+    const val KSP = "1.9.24-1.0.20"
 }
 
 object SupportLibs {
@@ -86,10 +92,13 @@ object Koin {
     const val TEST = "io.insert-koin:koin-test:${Versions.KOIN}"
 }
 
-object CheckBox {
-    const val LIB = "com.github.lguipeng:AnimCheckBox:${Versions.CHECK_BOX}"
-}
-
-object SmoothBottomBar {
-    const val LIB = "com.github.MehdiNosrati:SmoothBottomBar:${Versions.BOTTOM_BAR}"
+object Compose {
+    const val UI = "androidx.compose.ui:ui:${Versions.COMPOSE}"
+    const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Versions.COMPOSE}"
+    const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Versions.COMPOSE}"
+    const val MATERIAL3 = "androidx.compose.material3:material3:${Versions.COMPOSE_MATERIAL3}"
+    const val ACTIVITY = "androidx.activity:activity-compose:${Versions.ACTIVITY_COMPOSE}"
+    const val NAVIGATION = "androidx.navigation:navigation-compose:${Versions.NAVIGATION_COMPOSE}"
+    const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Versions.COMPOSE_LIVEDATA}"
+    const val KOIN = "io.insert-koin:koin-androidx-compose:${Versions.KOIN_COMPOSE}"
 }
