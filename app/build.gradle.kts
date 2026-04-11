@@ -26,6 +26,10 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -80,11 +84,15 @@ dependencies {
     implementation(Koin.ANDROID)
     implementation(Koin.CORE)
 
-    // animated checkbox
-    implementation(CheckBox.LIB)
-
-    // bottom nav bar
-    implementation(SmoothBottomBar.LIB)
+    // compose
+    implementation(Compose.UI)
+    implementation(Compose.UI_TOOLING_PREVIEW)
+    debugImplementation(Compose.UI_TOOLING)
+    implementation(Compose.MATERIAL3)
+    implementation(Compose.ACTIVITY)
+    implementation(Compose.NAVIGATION)
+    implementation(Compose.LIVEDATA)
+    implementation(Compose.KOIN)
 
     // test
     testImplementation(TestingLib.JUNIT)

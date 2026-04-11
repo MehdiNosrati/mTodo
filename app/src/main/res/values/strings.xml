@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">mTodo</string>
-    <string name="content_app_icon">App Icon</string>
-    <string name="add_hint">What has to be done?</string>
-    <string name="content_add_button">add button</string>
-    <string name="not_now">Not now</string>
-    <string name="todo">Todo</string>
-    <string name="done">Done</string>
     <string name="to_be_done">To Be Done</string>
-    <string name="already_done">Already Done</string>
-    <string name="content_menu_button">menu button</string>
-    <string name="settings">Settings</string>
-    <string name="dark_theme">Toggle Dark Theme</string>
     <string name="no_todo">You\'ve done it all</string>
-    <string name="no_done">You\'ve done nothing</string>
 </resources>

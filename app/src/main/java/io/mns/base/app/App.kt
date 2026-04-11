@@ -30,11 +30,9 @@ class App : MultiDexApplication() {
     }
 
     private fun startKoin() {
-        CoroutineScope(Dispatchers.Default).launch {
-            startKoin {
-                androidContext(this@App)
-                modules(KoinModules.appModule)
-            }
+        startKoin {
+            androidContext(this@App)
+            modules(KoinModules.appModule)
         }
     }
 }
