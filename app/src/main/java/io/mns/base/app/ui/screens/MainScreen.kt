@@ -12,7 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,9 +33,9 @@ sealed class Screen(
     val title: String,
     val icon: ImageVector
 ) {
-    object Home : Screen("home", "Todo", Icons.Default.Home)
+    object Home : Screen("home", "Todo", Icons.Default.List)
     object Done : Screen("done", "Done", Icons.Default.Done)
-    object Settings : Screen("settings", "Settings", Icons.Default.Home)
+    object Settings : Screen("settings", "Settings", Icons.Default.Settings)
 }
 
 private val NavBrand1 = Color(0xFF6366F1)

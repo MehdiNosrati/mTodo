@@ -12,7 +12,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -135,17 +134,21 @@ fun HomeScreen(
                                 TimeSegmentHeader(label = section.label)
                             }
                             is TodoListSection.Item -> {
-                                val index = itemIndex++
+                                itemIndex++
                                 item(key = section.todo.id) {
-                                    StaggeredItem(index = index) {
-                                        TodoItemRow(
-                                            item = section.todo,
-                                            onDone = { viewModel.done(section.todo) },
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp, vertical = 5.dp)
-                                                .animateItem()
-                                        )
-                                    }
+                                    TodoItemRow(
+                                        item = section.todo,
+                                        onDone = { viewModel.done(section.todo) },
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp, vertical = 5.dp)
+                                            .animateItem(
+                                                placementSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                                    stiffness = Spring.StiffnessLow
+                                                ),
+                                                fadeOutSpec = tween(220)
+                                            )
+                                    )
                                 }
                             }
                         }
@@ -166,26 +169,7 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun StaggeredItem(index: Int, content: @Composable () -> Unit) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(minOf(index * 60L, 360L))
-        visible = true
-    }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(tween(320)) + slideInVertically(
-            initialOffsetY = { it / 3 },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMediumLow
-            )
-        )
-    ) {
-        content()
-    }
-}
+
 
 @Composable
 private fun BackgroundOrbs() {

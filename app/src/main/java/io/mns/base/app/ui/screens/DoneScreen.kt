@@ -6,7 +6,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.ui.viewmodels.DoneViewModel
-import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 private val DoneGreen = Color(0xFF10B981)
@@ -119,35 +117,12 @@ fun DoneScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                        StaggeredDoneItem(index = index) {
-                            DoneItemRow(item = item, modifier = Modifier.animateItem())
-                        }
+                    itemsIndexed(items, key = { _, item -> item.id }) { _, item ->
+                        DoneItemRow(item = item, modifier = Modifier.animateItem())
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun StaggeredDoneItem(index: Int, content: @Composable () -> Unit) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(minOf(index * 55L, 330L))
-        visible = true
-    }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(tween(300)) + slideInVertically(
-            initialOffsetY = { it / 3 },
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMediumLow
-            )
-        )
-    ) {
-        content()
     }
 }
 
