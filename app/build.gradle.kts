@@ -20,17 +20,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val localProps = java.util.Properties().apply {
+        val f = rootProject.file("local.properties")
+        if (f.exists()) {
+            f.inputStream().use { load(it) }
+        }
+    }
+
     signingConfigs {
         create("release") {
-            val keystoreFile = project.findProperty("KEYSTORE_FILE") as? String
+            val keystoreFile = localProps.getProperty("KEYSTORE_FILE")
+                ?: (project.findProperty("KEYSTORE_FILE") as? String)
                 ?: System.getenv("KEYSTORE_FILE")
                 ?: "/Users/mns/Downloads/mns.jks"
-            val keystorePassword = project.findProperty("KEYSTORE_PASSWORD") as? String
+            val keystorePassword = localProps.getProperty("KEYSTORE_PASSWORD")
+                ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)
                 ?: System.getenv("KEYSTORE_PASSWORD")
-            val keyAliasName = project.findProperty("KEY_ALIAS") as? String
+            val keyAliasName = localProps.getProperty("KEY_ALIAS")
+                ?: (project.findProperty("KEY_ALIAS") as? String)
                 ?: System.getenv("KEY_ALIAS")
                 ?: "mns"
-            val keyPasswordValue = project.findProperty("KEY_PASSWORD") as? String
+            val keyPasswordValue = localProps.getProperty("KEY_PASSWORD")
+                ?: (project.findProperty("KEY_PASSWORD") as? String)
                 ?: System.getenv("KEY_PASSWORD")
 
             if (keystorePassword != null && keyPasswordValue != null && file(keystoreFile).exists()) {
