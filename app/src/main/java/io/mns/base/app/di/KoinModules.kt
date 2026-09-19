@@ -25,5 +25,6 @@ object KoinModules {
         viewModel { HomeViewModel(get()) }
         viewModel { DoneViewModel(get()) }
         viewModel { SettingViewModel(get()) }
+        viewModel { io.mns.base.app.ui.viewmodels.InsightsViewModel(get()) }
     }
 }

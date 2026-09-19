@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -35,6 +36,7 @@ sealed class Screen(
 ) {
     object Home : Screen("home", "Todo", Icons.AutoMirrored.Filled.List)
     object Done : Screen("done", "Done", Icons.Default.Done)
+    object Insights : Screen("insights", "Insights", Icons.AutoMirrored.Filled.TrendingUp)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
 }
 
@@ -47,7 +49,7 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val tabs = listOf(Screen.Home, Screen.Done)
+    val tabs = listOf(Screen.Home, Screen.Done, Screen.Insights)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -144,6 +146,9 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
             }
             composable(Screen.Done.route) {
                 DoneScreen(onSettingsClick = { navController.navigate(Screen.Settings.route) })
+            }
+            composable(Screen.Insights.route) {
+                InsightsScreen(onSettingsClick = { navController.navigate(Screen.Settings.route) })
             }
             composable(
                 route = Screen.Settings.route,

@@ -3,4 +3,14 @@
     <string name="app_name">کارام</string>
     <string name="to_be_done">کار هام</string>
     <string name="no_todo">همه کارها انجام شدن</string>
+    <string name="insights">آمار و بینش</string>
+    <string name="completion_rate">نرخ تکمیل</string>
+    <string name="completed">انجام‌شده</string>
+    <string name="active">در دست انجام</string>
+    <string name="current_streak">استمرار روزانه</string>
+    <string name="weekly_activity">فعالیت هفتگی</string>
+    <string name="productivity_summary">خلاصه بهره‌وری</string>
+    <string name="best_day">بهترین روز</string>
+    <string name="no_insights_title">هنوز آماری ثبت نشده</string>
+    <string name="no_insights_desc">با انجام کارها، آمار و روند پیشرفت خود را در اینجا ببینید</string>
 </resources>

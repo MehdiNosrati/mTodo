@@ -14,10 +14,32 @@ android {
         applicationId = "dev.mahdins.mtodo"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 26042000
+        versionName = "2.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystoreFile = project.findProperty("KEYSTORE_FILE") as? String
+                ?: System.getenv("KEYSTORE_FILE")
+                ?: "/Users/mns/Downloads/mns.jks"
+            val keystorePassword = project.findProperty("KEYSTORE_PASSWORD") as? String
+                ?: System.getenv("KEYSTORE_PASSWORD")
+            val keyAliasName = project.findProperty("KEY_ALIAS") as? String
+                ?: System.getenv("KEY_ALIAS")
+                ?: "mns"
+            val keyPasswordValue = project.findProperty("KEY_PASSWORD") as? String
+                ?: System.getenv("KEY_PASSWORD")
+
+            if (keystorePassword != null && keyPasswordValue != null && file(keystoreFile).exists()) {
+                storeFile = file(keystoreFile)
+                storePassword = keystorePassword
+                keyAlias = keyAliasName
+                keyPassword = keyPasswordValue
+            }
+        }
     }
 
     buildTypes {
@@ -27,6 +49,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null) {
+                signingConfig = releaseSigning
+            }
         }
     }
     buildFeatures {

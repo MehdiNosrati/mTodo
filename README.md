@@ -19,13 +19,13 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
   &nbsp;&nbsp;
   <img src="screens/done.png" width="270" alt="Done - Completed Tasks">
   &nbsp;&nbsp;
-  <img src="screens/settings.png" width="270" alt="Settings & Appearance">
+  <img src="screens/insights.png" width="270" alt="Task Statistics & Completion Insights">
 </p>
 
 <p align="center">
-  <img src="screens/home_empty.png" width="270" alt="Empty Home State">
+  <img src="screens/settings.png" width="270" alt="Settings & Appearance">
   &nbsp;&nbsp;
-  <img src="screens/done_empty.png" width="270" alt="Empty Done State">
+  <img src="screens/home_empty.png" width="270" alt="Empty Home State">
   &nbsp;&nbsp;
   <img src="screens/add_dialog.png" width="270" alt="Add Task Dialog">
 </p>
@@ -36,6 +36,7 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
 
 - **Modern Jetpack Compose UI**: 100% declarative UI built with Material 3, dynamic cards, and soft indigo/violet accents.
 - **Smart Date Segmentation**: Automatically groups active tasks into **Today**, **Yesterday**, and **Older** sections with sticky headers.
+- **Task Statistics & Completion Insights**: Real-time productivity metrics, completion rates, daily consistency streaks, and 7-day visual activity bar chart.
 - **Fluid Spring Animations**: Smooth item insertion, completion, and reordering animations powered by Compose `animateItem()`.
 - **Dark & Light Mode**: Seamless theme switching with system-default and user-selected appearance options.
 - **Multilingual Support**: Fully localized in English (`en`) and Persian (`fa`).
@@ -93,7 +94,7 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 - [x] Multilingual support: `en`, `fa`
 - [x] Automated unit and Room database test coverage
 - [x] Roborazzi screenshot testing suite
-- [ ] Task statistics & completion insights
+- [x] Task statistics & completion insights
 - [ ] Cloud synchronization & backup
 - [ ] Undo completion / trash recovery
 

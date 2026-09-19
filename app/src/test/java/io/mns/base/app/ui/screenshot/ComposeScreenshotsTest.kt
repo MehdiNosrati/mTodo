@@ -19,6 +19,7 @@ import io.mns.base.app.ui.screens.*
 import io.mns.base.app.ui.theme.MTodoTheme
 import io.mns.base.app.ui.viewmodels.DoneViewModel
 import io.mns.base.app.ui.viewmodels.HomeViewModel
+import io.mns.base.app.ui.viewmodels.InsightsViewModel
 import io.mns.base.app.ui.viewmodels.SettingViewModel
 import io.mockk.every
 import io.mockk.mockk
@@ -83,6 +84,7 @@ class ComposeScreenshotsTest {
                     viewModel { HomeViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { DoneViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { SettingViewModel(ApplicationProvider.getApplicationContext()) }
+                    viewModel { InsightsViewModel(ApplicationProvider.getApplicationContext()) }
                 }
             )
         }
@@ -155,6 +157,52 @@ class ComposeScreenshotsTest {
             }
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/setting_screen.png")
+    }
+
+    @Test
+    fun testInsightsScreen() {
+        val sampleStats = io.mns.base.app.data.stats.TaskStatistics(
+            totalActive = 3,
+            totalDone = 8,
+            completionRate = 72.7f,
+            completedToday = 2,
+            completedThisWeek = 6,
+            currentStreakDays = 4,
+            bestDayOfWeek = "Thursday",
+            weeklyActivity = listOf(
+                io.mns.base.app.data.stats.DayActivity("M", "Mon", 0L, 1, false),
+                io.mns.base.app.data.stats.DayActivity("T", "Tue", 0L, 0, false),
+                io.mns.base.app.data.stats.DayActivity("W", "Wed", 0L, 2, false),
+                io.mns.base.app.data.stats.DayActivity("T", "Thu", 0L, 3, false),
+                io.mns.base.app.data.stats.DayActivity("F", "Fri", 0L, 1, false),
+                io.mns.base.app.data.stats.DayActivity("S", "Sat", 0L, 0, false),
+                io.mns.base.app.data.stats.DayActivity("S", "Sun", 0L, 2, true)
+            ),
+            motivationalTitle = "On Fire! 🔥",
+            motivationalMessage = "You are on a 4-day streak! Keep up the amazing consistency."
+        )
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                InsightsScreenContent(
+                    statistics = sampleStats,
+                    animate = false
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/insights_screen.png")
+    }
+
+    @Test
+    fun testInsightsScreenEmpty() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                InsightsScreenContent(
+                    statistics = io.mns.base.app.data.stats.TaskStatistics(),
+                    animate = false
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/insights_screen_empty.png")
     }
 
     @Test

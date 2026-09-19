@@ -3,4 +3,14 @@
     <string name="app_name">mTodo</string>
     <string name="to_be_done">To Be Done</string>
     <string name="no_todo">You\'ve done it all</string>
+    <string name="insights">Insights</string>
+    <string name="completion_rate">Completion Rate</string>
+    <string name="completed">Completed</string>
+    <string name="active">Active</string>
+    <string name="current_streak">Current Streak</string>
+    <string name="weekly_activity">Weekly Activity</string>
+    <string name="productivity_summary">Productivity Summary</string>
+    <string name="best_day">Best Day</string>
+    <string name="no_insights_title">No stats yet</string>
+    <string name="no_insights_desc">Complete tasks to see your insights and productivity trends</string>
 </resources>
