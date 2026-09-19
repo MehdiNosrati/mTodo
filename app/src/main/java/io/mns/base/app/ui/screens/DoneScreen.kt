@@ -62,7 +62,8 @@ fun DoneScreen(
 @Composable
 fun DoneScreenContent(
     items: List<DoneItem>,
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    animate: Boolean = true
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -121,7 +122,12 @@ fun DoneScreenContent(
             )
 
             if (items.isEmpty()) {
-                DoneEmptyState(modifier = Modifier.align(Alignment.Center))
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    DoneEmptyState(animate = animate)
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -138,19 +144,25 @@ fun DoneScreenContent(
 }
 
 @Composable
-private fun DoneEmptyState(modifier: Modifier = Modifier) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { visible = true }
+fun DoneEmptyState(
+    modifier: Modifier = Modifier,
+    animate: Boolean = true
+) {
+    var visible by remember { mutableStateOf(!animate) }
+    LaunchedEffect(Unit) {
+        if (animate) visible = true
+    }
 
     AnimatedVisibility(
-        visible = visible,
+        modifier = modifier,
+        visible = visible || !animate,
         enter = fadeIn(tween(400)) + scaleIn(
             initialScale = 0.85f,
             animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
         )
     ) {
         Column(
-            modifier = modifier.padding(32.dp),
+            modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {

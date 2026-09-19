@@ -136,7 +136,8 @@ class ComposeScreenshotsTest {
         composeTestRule.setContent {
             MTodoTheme(darkTheme = false) {
                 DoneScreenContent(
-                    items = emptyList()
+                    items = emptyList(),
+                    animate = false
                 )
             }
         }
