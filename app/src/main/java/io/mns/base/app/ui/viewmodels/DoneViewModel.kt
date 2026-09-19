@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import io.mns.base.app.data.DoneItem
+import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoRepository
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -25,6 +26,36 @@ class DoneViewModel(application: Application) : AndroidViewModel(application), K
     fun delete(item: DoneItem) {
         viewModelScope.launch {
             repository.deleteDoneItem(item)
+        }
+    }
+
+    fun uncomplete(item: DoneItem) {
+        viewModelScope.launch {
+            repository.uncomplete(item)
+        }
+    }
+
+    fun undoUncomplete(item: DoneItem) {
+        viewModelScope.launch {
+            repository.deleteTodoItem(
+                TodoItem(
+                    id = item.id,
+                    createdAt = item.createdAt,
+                    title = item.title,
+                    description = item.description,
+                    dueDate = item.dueDate,
+                    priority = item.priority,
+                    tags = item.tags,
+                    subtasks = item.subtasks
+                )
+            )
+            repository.restoreDoneItem(item)
+        }
+    }
+
+    fun restoreDone(item: DoneItem) {
+        viewModelScope.launch {
+            repository.restoreDoneItem(item)
         }
     }
 

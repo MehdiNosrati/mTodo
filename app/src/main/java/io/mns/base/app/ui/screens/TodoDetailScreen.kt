@@ -49,6 +49,10 @@ import java.util.Date
 import java.util.Locale
 import org.koin.androidx.compose.koinViewModel
 
+import io.mns.base.app.data.Subtask
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FormatListBulleted
+
 private val Brand1 = Color(0xFF6366F1)
 private val Brand2 = Color(0xFFA78BFA)
 private val DoneGreen = Color(0xFF10B981)
@@ -91,7 +95,7 @@ fun TodoDetailScreen(
         todoItem = todoItem,
         doneItem = doneItem,
         onBack = onBack,
-        onSave = { title, desc, dueDate, priority, tags ->
+        onSave = { title, desc, dueDate, priority, tags, subtasks ->
             viewModel.saveTodo(
                 id = id,
                 title = title,
@@ -99,6 +103,7 @@ fun TodoDetailScreen(
                 dueDate = dueDate,
                 priority = priority,
                 tags = tags,
+                subtasks = subtasks,
                 onComplete = onBack
             )
         },
@@ -123,7 +128,7 @@ fun TodoDetailScreenContent(
     todoItem: TodoItem? = null,
     doneItem: DoneItem? = null,
     onBack: () -> Unit = {},
-    onSave: (title: String, desc: String, dueDate: Long?, priority: Priority, tags: List<String>) -> Unit = { _, _, _, _, _ -> },
+    onSave: (title: String, desc: String, dueDate: Long?, priority: Priority, tags: List<String>, subtasks: List<Subtask>) -> Unit = { _, _, _, _, _, _ -> },
     onCompleteTodo: (TodoItem) -> Unit = {},
     onDeleteTodo: (TodoItem) -> Unit = {},
     onDeleteDone: (DoneItem) -> Unit = {}
@@ -138,6 +143,8 @@ fun TodoDetailScreenContent(
     var tags by remember { mutableStateOf<List<String>>(emptyList()) }
     var newTagInput by remember { mutableStateOf("") }
     var showCustomTagField by remember { mutableStateOf(false) }
+    var subtasks by remember { mutableStateOf<List<Subtask>>(emptyList()) }
+    var newSubtaskText by remember { mutableStateOf("") }
 
     // Populate state once data is loaded
     LaunchedEffect(todoItem) {
@@ -147,6 +154,7 @@ fun TodoDetailScreenContent(
             priority = it.priority
             dueDate = it.dueDate
             tags = it.tags
+            subtasks = it.subtasks
         }
     }
 
@@ -157,6 +165,7 @@ fun TodoDetailScreenContent(
             priority = it.priority
             dueDate = it.dueDate
             tags = it.tags
+            subtasks = it.subtasks
         }
     }
 
@@ -227,7 +236,7 @@ fun TodoDetailScreenContent(
                         IconButton(
                             onClick = {
                                 if (title.isNotBlank()) {
-                                    onSave(title, description, dueDate, priority, tags)
+                                    onSave(title, description, dueDate, priority, tags, subtasks)
                                 }
                             }
                         ) {
@@ -250,7 +259,7 @@ fun TodoDetailScreenContent(
                             enabled = title.isNotBlank(),
                             onClick = {
                                 if (title.isNotBlank()) {
-                                    onSave(title, description, dueDate, priority, tags)
+                                    onSave(title, description, dueDate, priority, tags, subtasks)
                                 }
                             }
                         ) {
@@ -690,6 +699,165 @@ fun TodoDetailScreenContent(
                 }
             }
 
+            // Subtasks Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = CardDefaults.outlinedCardBorder()
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    val completedCount = subtasks.count { it.isDone }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FormatListBulleted,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Subtasks",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        if (subtasks.isNotEmpty()) {
+                            Text(
+                                text = "$completedCount of ${subtasks.size}",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    if (subtasks.isNotEmpty()) {
+                        LinearProgressIndicator(
+                            progress = { if (subtasks.isEmpty()) 0f else completedCount.toFloat() / subtasks.size },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(CircleShape),
+                            color = DoneGreen,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    }
+
+                    // Subtask items
+                    subtasks.forEachIndexed { index, subtask ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = subtask.isDone,
+                                onCheckedChange = if (isReadOnly) null else { isChecked ->
+                                    subtasks = subtasks.toMutableList().also { list ->
+                                        list[index] = subtask.copy(isDone = isChecked)
+                                    }
+                                },
+                                enabled = !isReadOnly,
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = DoneGreen,
+                                    checkmarkColor = Color.White
+                                )
+                            )
+                            Text(
+                                text = subtask.title,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    textDecoration = if (subtask.isDone) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                                ),
+                                color = if (subtask.isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 4.dp)
+                            )
+                            if (!isReadOnly) {
+                                IconButton(
+                                    onClick = {
+                                        subtasks = subtasks.toMutableList().also { it.removeAt(index) }
+                                    },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Delete subtask",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Add subtask inline input
+                    if (!isReadOnly) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = newSubtaskText,
+                                onValueChange = { newSubtaskText = it },
+                                placeholder = { Text("Add a subtask...", style = MaterialTheme.typography.bodySmall) },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                textStyle = MaterialTheme.typography.bodyMedium,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        val trimmed = newSubtaskText.trim()
+                                        if (trimmed.isNotBlank()) {
+                                            subtasks = subtasks + Subtask(title = trimmed)
+                                            newSubtaskText = ""
+                                        }
+                                    }
+                                )
+                            )
+                            IconButton(
+                                onClick = {
+                                    val trimmed = newSubtaskText.trim()
+                                    if (trimmed.isNotBlank()) {
+                                        subtasks = subtasks + Subtask(title = trimmed)
+                                        newSubtaskText = ""
+                                    }
+                                },
+                                enabled = newSubtaskText.isNotBlank(),
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(
+                                        if (newSubtaskText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                        RoundedCornerShape(12.dp)
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add subtask",
+                                    tint = if (newSubtaskText.isNotBlank()) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Timestamps info for Read-Only / Completed task
             if (isReadOnly && doneItem != null) {
                 Card(
@@ -774,7 +942,7 @@ fun TodoDetailScreenContent(
                             .background(brandBrush())
                             .clickable(
                                 enabled = title.isNotBlank(),
-                                onClick = { onSave(title, description, dueDate, priority, tags) }
+                                onClick = { onSave(title, description, dueDate, priority, tags, subtasks) }
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -798,7 +966,7 @@ fun TodoDetailScreenContent(
                         )
                         .clickable(
                             enabled = title.isNotBlank(),
-                            onClick = { onSave(title, description, dueDate, priority, tags) }
+                            onClick = { onSave(title, description, dueDate, priority, tags, subtasks) }
                         ),
                     contentAlignment = Alignment.Center
                 ) {

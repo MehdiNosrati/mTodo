@@ -34,9 +34,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.Priority
 import io.mns.base.app.ui.viewmodels.DoneViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 private val DoneGreen = Color(0xFF10B981)
@@ -58,7 +65,11 @@ fun DoneScreen(
     DoneScreenContent(
         items = items,
         onSettingsClick = onSettingsClick,
-        onItemClick = onItemClick
+        onItemClick = onItemClick,
+        onUncomplete = { viewModel.uncomplete(it) },
+        onDelete = { viewModel.delete(it) },
+        onUndoUncomplete = { viewModel.undoUncomplete(it) },
+        onRestoreDone = { viewModel.restoreDone(it) }
     )
 }
 
@@ -68,10 +79,18 @@ fun DoneScreenContent(
     items: List<DoneItem>,
     onSettingsClick: () -> Unit = {},
     onItemClick: (DoneItem) -> Unit = {},
+    onUncomplete: (DoneItem) -> Unit = {},
+    onDelete: (DoneItem) -> Unit = {},
+    onUndoUncomplete: (DoneItem) -> Unit = {},
+    onRestoreDone: (DoneItem) -> Unit = {},
     animate: Boolean = true
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -141,8 +160,36 @@ fun DoneScreenContent(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     itemsIndexed(items, key = { _, item -> item.id }) { _, item ->
-                        DoneItemRow(
+                        SwipeableDoneItemRow(
                             item = item,
+                            onUncomplete = {
+                                onUncomplete(item)
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Moved back to To-Do",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        onUndoUncomplete(item)
+                                    }
+                                }
+                            },
+                            onDelete = {
+                                onDelete(item)
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Done task deleted",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        onRestoreDone(item)
+                                    }
+                                }
+                            },
                             onClick = { onItemClick(item) },
                             modifier = Modifier.animateItem()
                         )
@@ -202,6 +249,78 @@ fun DoneEmptyState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeableDoneItemRow(
+    item: DoneItem,
+    onUncomplete: () -> Unit,
+    onDelete: () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onUncomplete()
+                    true
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    true
+                }
+                SwipeToDismissBoxValue.Settled -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val color = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                else -> Color.Transparent
+            }
+            val alignment = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                else -> Alignment.Center
+            }
+            val icon = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Refresh
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
+                else -> null
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 2.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(color)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = alignment
+            ) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        modifier = modifier
+    ) {
+        DoneItemRow(
+            item = item,
+            onClick = onClick
+        )
     }
 }
 
@@ -269,7 +388,7 @@ fun DoneItemRow(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (item.priority != Priority.NONE || item.tags.isNotEmpty()) {
+                    if (item.priority != Priority.NONE || item.tags.isNotEmpty() || item.subtasks.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -286,6 +405,35 @@ fun DoneItemRow(
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                                     color = item.priority.color
                                 )
+                            }
+                            if (item.subtasks.isNotEmpty()) {
+                                val completed = item.subtasks.count { it.isDone }
+                                val total = item.subtasks.size
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(10.dp),
+                                            tint = DoneGreen
+                                        )
+                                        Text(
+                                            text = "$completed/$total",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Medium
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                             item.tags.take(3).forEach { tag ->
                                 Text(

@@ -14,14 +14,21 @@ object KoinModules {
 
         single {
             Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
-                .addMigrations(TodoDataBase.MIGRATION_2_3)
+                .addMigrations(TodoDataBase.MIGRATION_2_3, TodoDataBase.MIGRATION_3_4)
                 .fallbackToDestructiveMigration()
                 .build()
         }
 
         single {
-            TodoRepository(get<TodoDataBase>().todoDao(), get<TodoDataBase>().doneDao())
+            TodoRepository(get<TodoDataBase>().todoDao(), get<TodoDataBase>().doneDao()).apply {
+                onDataChanged = {
+                    io.mns.base.app.widget.TodoWidgetProvider.updateAllWidgets(get())
+                }
+            }
         }
+
+        single { io.mns.base.app.notifications.ReminderManager(get()) }
+        single { io.mns.base.app.data.backup.BackupManager(get(), get()) }
 
         viewModel { HomeViewModel(get()) }
         viewModel { DoneViewModel(get()) }

@@ -14,8 +14,12 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+import io.mns.base.app.data.Subtask
+import io.mns.base.app.notifications.ReminderManager
+
 class TodoDetailViewModel(application: Application) : AndroidViewModel(application), KoinComponent {
     private val repository: TodoRepository by inject()
+    private val reminderManager: ReminderManager by inject()
 
     private val _todoItem = MutableLiveData<TodoItem?>()
     val todoItem: LiveData<TodoItem?> get() = _todoItem
@@ -42,34 +46,44 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
         dueDate: Long?,
         priority: Priority,
         tags: List<String>,
+        subtasks: List<Subtask> = emptyList(),
         onComplete: () -> Unit
     ) {
         if (title.isBlank()) return
         viewModelScope.launch {
             val existing = id?.let { repository.getTodoById(it) }
-            if (existing != null) {
-                repository.updateTodoItem(
-                    existing.copy(
-                        title = title.trim(),
-                        description = description.trim(),
-                        dueDate = dueDate,
-                        priority = priority,
-                        tags = tags
-                    )
+            val itemToSchedule = if (existing != null) {
+                val updated = existing.copy(
+                    title = title.trim(),
+                    description = description.trim(),
+                    dueDate = dueDate,
+                    priority = priority,
+                    tags = tags,
+                    subtasks = subtasks
                 )
+                repository.updateTodoItem(updated)
+                updated
             } else {
-                repository.insertTodoItem(
-                    TodoItem(
-                        id = id ?: UUID.randomUUID().toString(),
-                        createdAt = System.currentTimeMillis(),
-                        title = title.trim(),
-                        description = description.trim(),
-                        dueDate = dueDate,
-                        priority = priority,
-                        tags = tags
-                    )
+                val inserted = TodoItem(
+                    id = id ?: UUID.randomUUID().toString(),
+                    createdAt = System.currentTimeMillis(),
+                    title = title.trim(),
+                    description = description.trim(),
+                    dueDate = dueDate,
+                    priority = priority,
+                    tags = tags,
+                    subtasks = subtasks
                 )
+                repository.insertTodoItem(inserted)
+                inserted
             }
+
+            if (itemToSchedule.dueDate != null && itemToSchedule.dueDate > System.currentTimeMillis()) {
+                reminderManager.scheduleReminder(itemToSchedule)
+            } else {
+                reminderManager.cancelReminder(itemToSchedule.id)
+            }
+
             onComplete()
         }
     }

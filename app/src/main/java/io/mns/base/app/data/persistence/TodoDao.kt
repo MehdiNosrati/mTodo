@@ -23,4 +23,13 @@ interface TodoDao {
 
     @Query("select * from todos order by createdAt desc")
     fun getTodos(): LiveData<List<TodoItem>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTodos(todos: List<TodoItem>)
+
+    @Query("SELECT * FROM todos ORDER BY createdAt DESC")
+    suspend fun getAllTodosList(): List<TodoItem>
+
+    @Query("DELETE FROM todos")
+    suspend fun clearAll()
 }

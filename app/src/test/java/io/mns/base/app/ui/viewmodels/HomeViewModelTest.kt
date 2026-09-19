@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoListSection
 import io.mns.base.app.data.TodoRepository
+import io.mns.base.app.notifications.ReminderManager
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,6 +31,7 @@ class HomeViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val application: Application = mockk(relaxed = true)
     private val repository: TodoRepository = mockk(relaxed = true)
+    private val reminderManager: ReminderManager = mockk(relaxed = true)
     private val todosLiveData = MutableLiveData<List<TodoItem>>()
 
     private lateinit var viewModel: HomeViewModel
@@ -46,6 +48,7 @@ class HomeViewModelTest {
             modules(
                 module {
                     single { repository }
+                    single { reminderManager }
                 }
             )
         }

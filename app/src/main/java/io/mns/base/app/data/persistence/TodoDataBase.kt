@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.TodoItem
 
-@Database(version = 3, entities = [TodoItem::class, DoneItem::class], exportSchema = false)
+@Database(version = 4, entities = [TodoItem::class, DoneItem::class], exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class TodoDataBase : RoomDatabase() {
     abstract fun todoDao(): TodoDao
@@ -27,6 +27,13 @@ abstract class TodoDataBase : RoomDatabase() {
                 db.execSQL("ALTER TABLE doneItems ADD COLUMN dueDate INTEGER DEFAULT NULL")
                 db.execSQL("ALTER TABLE doneItems ADD COLUMN priority INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE doneItems ADD COLUMN tags TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN subtasks TEXT NOT NULL DEFAULT '[]'")
+                db.execSQL("ALTER TABLE doneItems ADD COLUMN subtasks TEXT NOT NULL DEFAULT '[]'")
             }
         }
     }

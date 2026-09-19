@@ -72,6 +72,8 @@ class ComposeScreenshotsTest {
             stopKoin()
         }
         val repository = mockk<TodoRepository>(relaxed = true)
+        val reminderManager = mockk<io.mns.base.app.notifications.ReminderManager>(relaxed = true)
+        val backupManager = mockk<io.mns.base.app.data.backup.BackupManager>(relaxed = true)
         val todosLiveData = androidx.lifecycle.MutableLiveData<List<TodoItem>>(sampleTodos)
         val doneLiveData = androidx.lifecycle.MutableLiveData<List<DoneItem>>(sampleDoneItems)
         every { repository.loadTodoItems() } returns todosLiveData
@@ -81,6 +83,8 @@ class ComposeScreenshotsTest {
             modules(
                 module {
                     single { repository }
+                    single { reminderManager }
+                    single { backupManager }
                     viewModel { HomeViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { DoneViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { SettingViewModel(ApplicationProvider.getApplicationContext()) }

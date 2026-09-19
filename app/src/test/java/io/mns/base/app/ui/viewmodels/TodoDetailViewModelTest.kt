@@ -6,6 +6,7 @@ import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.Priority
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoRepository
+import io.mns.base.app.notifications.ReminderManager
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,6 +30,7 @@ class TodoDetailViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val application: Application = mockk(relaxed = true)
     private val repository: TodoRepository = mockk(relaxed = true)
+    private val reminderManager: ReminderManager = mockk(relaxed = true)
 
     private lateinit var viewModel: TodoDetailViewModel
 
@@ -42,6 +44,7 @@ class TodoDetailViewModelTest {
             modules(
                 module {
                     single { repository }
+                    single { reminderManager }
                 }
             )
         }

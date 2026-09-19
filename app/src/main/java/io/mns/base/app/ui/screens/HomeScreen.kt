@@ -61,7 +61,20 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import io.mns.base.app.data.SortOrder
+import io.mns.base.app.data.TaskFilter
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 private val Brand1 = Color(0xFF6366F1)
@@ -97,13 +110,54 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val sections by viewModel.sections.observeAsState(initial = emptyList())
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
+    val availableTags by viewModel.availableTags.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     HomeScreenContent(
         sections = sections,
+        searchQuery = searchQuery,
+        selectedFilter = selectedFilter,
+        sortOrder = sortOrder,
+        availableTags = availableTags,
         onSettingsClick = onSettingsClick,
         onItemClick = onItemClick,
         onExpandAdd = onExpandAdd,
-        onDone = { viewModel.done(it) },
-        onAdd = { viewModel.insertItem(it) }
+        onSearchQueryChange = { viewModel.setSearchQuery(it) },
+        onFilterChange = { viewModel.setFilter(it) },
+        onSortOrderChange = { viewModel.setSortOrder(it) },
+        onDone = { item ->
+            viewModel.done(item)
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Task completed",
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.uncomplete(item)
+                }
+            }
+        },
+        onDelete = { item ->
+            viewModel.deleteTodo(item)
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Task deleted",
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.restoreTodo(item)
+                }
+            }
+        },
+        onAdd = { viewModel.insertItem(it) },
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -111,17 +165,29 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(
     sections: List<TodoListSection>,
+    searchQuery: String = "",
+    selectedFilter: TaskFilter = TaskFilter.All,
+    sortOrder: SortOrder = SortOrder.CREATION_DATE_DESC,
+    availableTags: List<String> = emptyList(),
     onSettingsClick: () -> Unit = {},
     onItemClick: (TodoItem) -> Unit = {},
     onExpandAdd: (draft: String) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onFilterChange: (TaskFilter) -> Unit = {},
+    onSortOrderChange: (SortOrder) -> Unit = {},
     onDone: (TodoItem) -> Unit = {},
+    onDelete: (TodoItem) -> Unit = {},
     onAdd: (String) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialFabVisible: Boolean = true,
     initialIsAdding: Boolean = false
 ) {
     var isAdding by remember { mutableStateOf(initialIsAdding) }
     var draftText by remember { mutableStateOf("") }
     var fabVisible by remember { mutableStateOf(initialFabVisible) }
+    var isSearchVisible by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) { fabVisible = true }
 
     val commitOrDismiss = {
@@ -135,6 +201,7 @@ fun HomeScreenContent(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -154,6 +221,44 @@ fun HomeScreenContent(
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.primary
                         )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = if (isSearchVisible || searchQuery.isNotEmpty()) Brand1 else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Box {
+                        IconButton(onClick = { showSortMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Sort,
+                                contentDescription = "Sort",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            SortOrder.entries.forEach { order ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = order.label,
+                                            fontWeight = if (order == sortOrder) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (order == sortOrder) Brand1 else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        onSortOrderChange(order)
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -192,57 +297,168 @@ fun HomeScreenContent(
         ) {
             BackgroundOrbs()
 
-            if (sections.isEmpty() && !isAdding) {
-                EmptyState(modifier = Modifier.align(Alignment.Center))
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
-                ) {
-                    if (isAdding) {
-                        item(key = "inline_add_card") {
-                            InlineAddTodoCard(
-                                draftText = draftText,
-                                onDraftChange = { draftText = it },
-                                onSubmit = commitOrDismiss,
-                                onCancel = {
-                                    draftText = ""
-                                    isAdding = false
-                                },
-                                onExpand = {
-                                    val currentDraft = draftText.trim()
-                                    draftText = ""
-                                    isAdding = false
-                                    onExpandAdd(currentDraft)
-                                },
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 6.dp)
-                                    .animateItem()
-                            )
-                        }
-                    }
-
-                    sections.forEach { section ->
-                        when (section) {
-                            is TodoListSection.Header -> stickyHeader(key = "h_${section.hourStartMs}") {
-                                TimeSegmentHeader(label = section.label)
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Animated Search Bar
+                AnimatedVisibility(visible = isSearchVisible) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        placeholder = { Text("Search tasks...", style = MaterialTheme.typography.bodyMedium) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { onSearchQueryChange("") }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear search", modifier = Modifier.size(18.dp))
+                                }
                             }
-                            is TodoListSection.Item -> {
-                                item(key = section.todo.id) {
-                                    TodoItemRow(
-                                        item = section.todo,
-                                        onDone = { onDone(section.todo) },
-                                        onClick = { onItemClick(section.todo) },
-                                        modifier = Modifier
-                                            .padding(horizontal = 16.dp, vertical = 5.dp)
-                                            .animateItem(
-                                                placementSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                                    stiffness = Spring.StiffnessLow
-                                                ),
-                                                fadeOutSpec = tween(220)
-                                            )
-                                    )
+                        }
+                    )
+                }
+
+                // Filter Chips Carousel
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.All,
+                            onClick = { onFilterChange(TaskFilter.All) },
+                            label = { Text("All") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.HIGH,
+                            onClick = { onFilterChange(TaskFilter.ByPriority(Priority.HIGH)) },
+                            label = { Text("🔴 High") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.MEDIUM,
+                            onClick = { onFilterChange(TaskFilter.ByPriority(Priority.MEDIUM)) },
+                            label = { Text("🟠 Med") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.LOW,
+                            onClick = { onFilterChange(TaskFilter.ByPriority(Priority.LOW)) },
+                            label = { Text("🟢 Low") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    item {
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.Overdue,
+                            onClick = { onFilterChange(TaskFilter.Overdue) },
+                            label = { Text("⚠️ Overdue") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    items(availableTags) { tag ->
+                        FilterChip(
+                            selected = selectedFilter is TaskFilter.ByTag && (selectedFilter as TaskFilter.ByTag).tag == tag,
+                            onClick = { onFilterChange(TaskFilter.ByTag(tag)) },
+                            label = { Text("#$tag") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                }
+
+                val isFilterActive = searchQuery.isNotEmpty() || selectedFilter !is TaskFilter.All
+
+                if (sections.isEmpty() && !isAdding) {
+                    if (isFilterActive) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = "No tasks match your filter",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                OutlinedButton(
+                                    onClick = {
+                                        onSearchQueryChange("")
+                                        onFilterChange(TaskFilter.All)
+                                    }
+                                ) {
+                                    Text("Reset Filters")
+                                }
+                            }
+                        }
+                    } else {
+                        EmptyState(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 100.dp, top = 4.dp)
+                    ) {
+                        if (isAdding) {
+                            item(key = "inline_add_card") {
+                                InlineAddTodoCard(
+                                    draftText = draftText,
+                                    onDraftChange = { draftText = it },
+                                    onSubmit = commitOrDismiss,
+                                    onCancel = {
+                                        draftText = ""
+                                        isAdding = false
+                                    },
+                                    onExpand = {
+                                        val currentDraft = draftText.trim()
+                                        draftText = ""
+                                        isAdding = false
+                                        onExpandAdd(currentDraft)
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                                        .animateItem()
+                                )
+                            }
+                        }
+
+                        sections.forEach { section ->
+                            when (section) {
+                                is TodoListSection.Header -> stickyHeader(key = section.key) {
+                                    TimeSegmentHeader(label = section.label)
+                                }
+                                is TodoListSection.Item -> {
+                                    item(key = section.todo.id) {
+                                        SwipeableTodoItemRow(
+                                            item = section.todo,
+                                            onDone = { onDone(section.todo) },
+                                            onDelete = { onDelete(section.todo) },
+                                            onClick = { onItemClick(section.todo) },
+                                            modifier = Modifier
+                                                .padding(horizontal = 16.dp, vertical = 5.dp)
+                                                .animateItem(
+                                                    placementSpec = spring(
+                                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                                        stiffness = Spring.StiffnessLow
+                                                    ),
+                                                    fadeOutSpec = tween(220)
+                                                )
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -382,6 +598,79 @@ fun TimeSegmentHeader(label: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeableTodoItemRow(
+    item: TodoItem,
+    onDone: () -> Unit,
+    onDelete: () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onDone()
+                    true
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    true
+                }
+                SwipeToDismissBoxValue.Settled -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val color = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Brand1.copy(alpha = 0.85f)
+                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                else -> Color.Transparent
+            }
+            val alignment = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                else -> Alignment.Center
+            }
+            val icon = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Done
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
+                else -> null
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 2.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(color)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = alignment
+            ) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        modifier = modifier
+    ) {
+        TodoItemRow(
+            item = item,
+            onDone = onDone,
+            onClick = onClick
+        )
+    }
+}
+
 @Composable
 fun TodoItemRow(
     item: TodoItem,
@@ -469,7 +758,7 @@ fun TodoItemRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty()) {
+                if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty() || item.subtasks.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -496,6 +785,35 @@ fun TodoItemRow(
                                 ),
                                 color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                        }
+                        if (item.subtasks.isNotEmpty()) {
+                            val completed = item.subtasks.count { it.isDone }
+                            val total = item.subtasks.size
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(10.dp),
+                                        tint = if (completed == total) Brand1 else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "$completed/$total",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                         }
                         val maxTags = if (item.dueDate != null) 1 else 2
                         item.tags.take(maxTags).forEach { tag ->

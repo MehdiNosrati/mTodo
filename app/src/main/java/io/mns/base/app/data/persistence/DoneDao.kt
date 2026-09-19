@@ -20,4 +20,13 @@ interface DoneDao {
 
     @Query("select * from doneItems order by doneAt desc")
     fun getDoneItems(): LiveData<List<DoneItem>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDoneItems(items: List<DoneItem>)
+
+    @Query("SELECT * FROM doneItems ORDER BY doneAt DESC")
+    suspend fun getAllDoneList(): List<DoneItem>
+
+    @Query("DELETE FROM doneItems")
+    suspend fun clearAll()
 }

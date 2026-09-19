@@ -16,7 +16,8 @@ data class DoneItem(
     val description: String = "",
     val dueDate: Long? = null,
     val priority: Priority = Priority.NONE,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val subtasks: List<Subtask> = emptyList()
 ) {
     val date: String
         get() = df.format(Date(doneAt))
