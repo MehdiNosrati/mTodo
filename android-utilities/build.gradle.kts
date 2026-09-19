@@ -1,69 +1,31 @@
-version = LibraryAndroidCoordinates.LIBRARY_VERSION
-
 plugins {
-    id("com.android.library")
-    kotlin("android")
-    id("kotlin-android-extensions")
-    id("maven-publish")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
-    compileSdkVersion(Sdk.COMPILE_SDK_VERSION)
+    namespace = "io.mns.androidlib"
+    compileSdk = 35
 
     defaultConfig {
-        minSdkVersion(Sdk.MIN_SDK_VERSION)
-        targetSdkVersion(Sdk.TARGET_SDK_VERSION)
-
-        versionCode = LibraryAndroidCoordinates.LIBRARY_VERSION_CODE
-        versionName = LibraryAndroidCoordinates.LIBRARY_VERSION
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-
-    lintOptions {
-        isWarningsAsErrors = true
-        isAbortOnError = true
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk7"))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
 
-    implementation(SupportLibs.ANDROIDX_APPCOMPAT)
-    implementation(SupportLibs.ANDROIDX_CORE_KTX)
-
-    testImplementation(TestingLib.JUNIT)
-
-    androidTestImplementation(AndroidTestingLib.ANDROIDX_TEST_RUNNER)
-    androidTestImplementation(AndroidTestingLib.ANDROIDX_TEST_EXT_JUNIT)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-            }
-        }
-    }
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.junit)
 }

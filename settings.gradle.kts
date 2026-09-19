@@ -1,26 +1,27 @@
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "com.android.library") {
-                useModule("com.android.tools.build:gradle:${requested.version}")
-            }
-            if (requested.id.id == "com.android.application") {
-                useModule("com.android.tools.build:gradle:${requested.version}")
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
             }
         }
-    }
-    repositories {
+        mavenCentral()
         gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
         google()
         mavenCentral()
-        jcenter()
+        maven {
+            setUrl("https://jitpack.io")
+        }
     }
 }
 
-rootProject.name = ("mTodo")
-
-include(
-    "app",
-    "android-utilities",
-    "utilities"
-)
+rootProject.name = "mTodo"
+include(":app")
+include(":android-utilities")

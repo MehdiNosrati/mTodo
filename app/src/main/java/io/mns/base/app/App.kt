@@ -5,10 +5,8 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.multidex.MultiDexApplication
 import io.mns.base.app.di.KoinModules
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
 class App : MultiDexApplication() {
@@ -30,7 +28,7 @@ class App : MultiDexApplication() {
     }
 
     private fun startKoin() {
-        CoroutineScope(Dispatchers.Default).launch {
+        if (GlobalContext.getOrNull() == null) {
             startKoin {
                 androidContext(this@App)
                 modules(KoinModules.appModule)

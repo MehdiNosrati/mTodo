@@ -13,5 +13,5 @@ interface TodoDao {
     suspend fun done(todo: TodoItem)
 
     @Query("select * from todos order by createdAt desc")
-    fun getTodos(): LiveData<List<TodoItem>?>
+    fun getTodos(): LiveData<List<TodoItem>>
 }
