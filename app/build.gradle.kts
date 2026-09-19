@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,19 +10,19 @@ plugins {
 
 android {
     namespace = "io.mns.base.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.mahdins.mtodo"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 26042000
+        targetSdk = 36
+        versionCode = 26042001
         versionName = "2.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    val localProps = java.util.Properties().apply {
+    val localProps = Properties().apply {
         val f = rootProject.file("local.properties")
         if (f.exists()) {
             f.inputStream().use { load(it) }
