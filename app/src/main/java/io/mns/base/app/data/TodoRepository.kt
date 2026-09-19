@@ -15,8 +15,35 @@ class TodoRepository(private val todoDao: TodoDao, private val doneDao: DoneDao)
         todoDao.insertTodo(todo)
     }
 
+    suspend fun updateTodoItem(todo: TodoItem) {
+        todoDao.updateTodo(todo)
+    }
+
+    suspend fun deleteTodoItem(todo: TodoItem) {
+        todoDao.deleteTodo(todo)
+    }
+
+    suspend fun deleteDoneItem(item: DoneItem) {
+        doneDao.delete(item)
+    }
+
+    suspend fun getTodoById(id: String): TodoItem? = todoDao.getTodoById(id)
+
+    suspend fun getDoneById(id: String): DoneItem? = doneDao.getDoneById(id)
+
     suspend fun done(item: TodoItem) {
         todoDao.done(item)
-        doneDao.insert(DoneItem(item.id, Date().time, item.title))
+        doneDao.insert(
+            DoneItem(
+                id = item.id,
+                doneAt = System.currentTimeMillis(),
+                title = item.title,
+                createdAt = item.createdAt,
+                description = item.description,
+                dueDate = item.dueDate,
+                priority = item.priority,
+                tags = item.tags
+            )
+        )
     }
 }

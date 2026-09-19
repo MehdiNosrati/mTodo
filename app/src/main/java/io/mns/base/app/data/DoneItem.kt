@@ -11,7 +11,12 @@ val df = SimpleDateFormat("MM/dd", Locale.US)
 data class DoneItem(
     @PrimaryKey val id: String,
     val doneAt: Long,
-    val title: String
+    val title: String,
+    val createdAt: Long = doneAt,
+    val description: String = "",
+    val dueDate: Long? = null,
+    val priority: Priority = Priority.NONE,
+    val tags: List<String> = emptyList()
 ) {
     val date: String
         get() = df.format(Date(doneAt))

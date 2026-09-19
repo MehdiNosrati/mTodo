@@ -1,6 +1,7 @@
 package io.mns.base.app.data.stats
 
 import io.mns.base.app.data.DoneItem
+import io.mns.base.app.data.Priority
 import io.mns.base.app.data.TodoItem
 import java.time.Instant
 import java.time.LocalDate
@@ -68,6 +69,15 @@ object StatisticsCalculator {
             currentStreakDays = currentStreakDays
         )
 
+        // Priority breakdown
+        val priorityBreakdown = Priority.entries.map { p ->
+            PriorityStat(
+                priority = p,
+                activeCount = todos.count { it.priority == p },
+                doneCount = doneItems.count { it.priority == p }
+            )
+        }
+
         return TaskStatistics(
             totalActive = totalActive,
             totalDone = totalDone,
@@ -77,6 +87,7 @@ object StatisticsCalculator {
             currentStreakDays = currentStreakDays,
             bestDayOfWeek = bestDayOfWeek,
             weeklyActivity = weeklyActivity,
+            priorityBreakdown = priorityBreakdown,
             motivationalTitle = title,
             motivationalMessage = message
         )

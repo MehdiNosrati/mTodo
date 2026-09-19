@@ -22,10 +22,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -33,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -40,13 +48,19 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.mns.base.app.R
+import io.mns.base.app.data.Priority
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoListSection
 import io.mns.base.app.ui.viewmodels.HomeViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
@@ -58,16 +72,36 @@ private fun brandBrush(
     end: Offset = Offset.Infinite
 ) = Brush.linearGradient(colors = listOf(Brand1, Brand2), start = start, end = end)
 
+private fun formatDueDate(dueDateMs: Long): Pair<String, Boolean> {
+    val now = Calendar.getInstance()
+    val due = Calendar.getInstance().apply { timeInMillis = dueDateMs }
+    val isOverdue = dueDateMs < System.currentTimeMillis()
+    val timeStr = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(dueDateMs))
+    val dayDiff = due.get(Calendar.DAY_OF_YEAR) - now.get(Calendar.DAY_OF_YEAR)
+    val yearDiff = due.get(Calendar.YEAR) - now.get(Calendar.YEAR)
+    val text = when {
+        yearDiff == 0 && dayDiff == 0 -> "Today $timeStr"
+        yearDiff == 0 && dayDiff == 1 -> "Tomorrow $timeStr"
+        yearDiff == 0 && dayDiff == -1 -> "Yesterday $timeStr"
+        else -> "${SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(dueDateMs))} $timeStr"
+    }
+    return (if (isOverdue) "Overdue · $text" else text) to isOverdue
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onSettingsClick: () -> Unit,
+    onItemClick: (TodoItem) -> Unit = {},
+    onExpandAdd: (draft: String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val sections by viewModel.sections.observeAsState(initial = emptyList())
     HomeScreenContent(
         sections = sections,
         onSettingsClick = onSettingsClick,
+        onItemClick = onItemClick,
+        onExpandAdd = onExpandAdd,
         onDone = { viewModel.done(it) },
         onAdd = { viewModel.insertItem(it) }
     )
@@ -78,13 +112,26 @@ fun HomeScreen(
 fun HomeScreenContent(
     sections: List<TodoListSection>,
     onSettingsClick: () -> Unit = {},
+    onItemClick: (TodoItem) -> Unit = {},
+    onExpandAdd: (draft: String) -> Unit = {},
     onDone: (TodoItem) -> Unit = {},
     onAdd: (String) -> Unit = {},
-    initialFabVisible: Boolean = true
+    initialFabVisible: Boolean = true,
+    initialIsAdding: Boolean = false
 ) {
-    var showAddDialog by remember { mutableStateOf(false) }
+    var isAdding by remember { mutableStateOf(initialIsAdding) }
+    var draftText by remember { mutableStateOf("") }
     var fabVisible by remember { mutableStateOf(initialFabVisible) }
     LaunchedEffect(Unit) { fabVisible = true }
+
+    val commitOrDismiss = {
+        val trimmed = draftText.trim()
+        if (trimmed.isNotBlank()) {
+            onAdd(trimmed)
+            draftText = ""
+        }
+        isAdding = false
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -111,12 +158,13 @@ fun HomeScreenContent(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = fabVisible,
+                visible = fabVisible && !isAdding,
                 enter = scaleIn(
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -125,7 +173,7 @@ fun HomeScreenContent(
                     initialScale = 0.5f
                 ) + fadeIn(tween(300))
             ) {
-                GradientFab(onClick = { showAddDialog = true })
+                GradientFab(onClick = { isAdding = true })
             }
         },
         floatingActionButtonPosition = FabPosition.Center
@@ -134,28 +182,57 @@ fun HomeScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .clickable(
+                    enabled = isAdding,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    commitOrDismiss()
+                }
         ) {
             BackgroundOrbs()
 
-            if (sections.isEmpty()) {
+            if (sections.isEmpty() && !isAdding) {
                 EmptyState(modifier = Modifier.align(Alignment.Center))
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp)
                 ) {
-                    var itemIndex = 0
+                    if (isAdding) {
+                        item(key = "inline_add_card") {
+                            InlineAddTodoCard(
+                                draftText = draftText,
+                                onDraftChange = { draftText = it },
+                                onSubmit = commitOrDismiss,
+                                onCancel = {
+                                    draftText = ""
+                                    isAdding = false
+                                },
+                                onExpand = {
+                                    val currentDraft = draftText.trim()
+                                    draftText = ""
+                                    isAdding = false
+                                    onExpandAdd(currentDraft)
+                                },
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                                    .animateItem()
+                            )
+                        }
+                    }
+
                     sections.forEach { section ->
                         when (section) {
                             is TodoListSection.Header -> stickyHeader(key = "h_${section.hourStartMs}") {
                                 TimeSegmentHeader(label = section.label)
                             }
                             is TodoListSection.Item -> {
-                                itemIndex++
                                 item(key = section.todo.id) {
                                     TodoItemRow(
                                         item = section.todo,
                                         onDone = { onDone(section.todo) },
+                                        onClick = { onItemClick(section.todo) },
                                         modifier = Modifier
                                             .padding(horizontal = 16.dp, vertical = 5.dp)
                                             .animateItem(
@@ -172,16 +249,6 @@ fun HomeScreenContent(
                     }
                 }
             }
-        }
-
-        if (showAddDialog) {
-            AddTodoDialog(
-                onDismiss = { showAddDialog = false },
-                onAdd = { title ->
-                    onAdd(title)
-                    showAddDialog = false
-                }
-            )
         }
     }
 }
@@ -316,7 +383,12 @@ fun TimeSegmentHeader(label: String) {
 }
 
 @Composable
-fun TodoItemRow(item: TodoItem, onDone: () -> Unit, modifier: Modifier = Modifier) {
+fun TodoItemRow(
+    item: TodoItem,
+    onDone: () -> Unit,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     val btnInteraction = remember { MutableInteractionSource() }
     val btnPressed by btnInteraction.collectIsPressedAsState()
     var checked by remember { mutableStateOf(false) }
@@ -356,6 +428,8 @@ fun TodoItemRow(item: TodoItem, onDone: () -> Unit, modifier: Modifier = Modifie
         }
     }
 
+    val stripeColor = if (item.priority != Priority.NONE) item.priority.color else Brand1
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -368,6 +442,7 @@ fun TodoItemRow(item: TodoItem, onDone: () -> Unit, modifier: Modifier = Modifie
             .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -376,21 +451,64 @@ fun TodoItemRow(item: TodoItem, onDone: () -> Unit, modifier: Modifier = Modifie
             Box(
                 modifier = Modifier
                     .width(3.dp)
-                    .height(62.dp)
+                    .height(64.dp)
                     .background(
-                        brandBrush(start = Offset(0f, 0f), end = Offset(0f, Float.POSITIVE_INFINITY)),
+                        if (item.priority != Priority.NONE) Brush.linearGradient(listOf(stripeColor, stripeColor))
+                        else brandBrush(start = Offset(0f, 0f), end = Offset(0f, Float.POSITIVE_INFINITY)),
                         RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
                     )
             )
-            Text(
-                text = item.title,
+            Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp, end = 8.dp),
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+                    .padding(start = 14.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
+            ) {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (item.priority != Priority.NONE) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .background(item.priority.color, CircleShape)
+                            )
+                            Text(
+                                text = item.priority.label,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = item.priority.color
+                            )
+                        }
+                        if (item.dueDate != null) {
+                            val (dueText, isOverdue) = formatDueDate(item.dueDate!!)
+                            Text(
+                                text = dueText,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isOverdue) FontWeight.Bold else FontWeight.Normal
+                                ),
+                                color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        val maxTags = if (item.dueDate != null) 1 else 2
+                        item.tags.take(maxTags).forEach { tag ->
+                            Text(
+                                text = "#$tag",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Brand1.copy(alpha = 0.85f),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
             Box(
                 modifier = Modifier
                     .padding(end = 16.dp)
@@ -570,3 +688,115 @@ fun AddTodoDialogCard(
         }
     }
 }
+
+@Composable
+fun InlineAddTodoCard(
+    draftText: String,
+    onDraftChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit,
+    onExpand: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Brand1.copy(alpha = 0.25f),
+                ambientColor = Brand1.copy(alpha = 0.10f)
+            )
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.5.dp, Brand1, RoundedCornerShape(20.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 0.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(54.dp)
+                    .background(brandBrush(), RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            BasicTextField(
+                value = draftText,
+                onValueChange = onDraftChange,
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium
+                ),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onSubmit() }),
+                decorationBox = { innerTextField ->
+                    if (draftText.isEmpty()) {
+                        Text(
+                            text = "What needs to be done?",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+
+            // Expand to full details button
+            IconButton(
+                onClick = onExpand,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.OpenInFull,
+                    contentDescription = "Open full details",
+                    tint = Brand1,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            // Submit checkmark button
+            IconButton(
+                onClick = onSubmit,
+                enabled = draftText.isNotBlank(),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (draftText.isNotBlank()) Brand1 else Color.Transparent)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Add todo",
+                    tint = if (draftText.isNotBlank()) Color.White else MaterialTheme.colorScheme.outlineVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Cancel button
+            IconButton(
+                onClick = onCancel,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Cancel",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+

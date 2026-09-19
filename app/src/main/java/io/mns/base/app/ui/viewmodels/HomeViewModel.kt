@@ -31,8 +31,41 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
     }
 
     fun insertItem(title: String) {
+        insertTodo(title = title)
+    }
+
+    fun insertTodo(
+        title: String,
+        description: String = "",
+        dueDate: Long? = null,
+        priority: io.mns.base.app.data.Priority = io.mns.base.app.data.Priority.NONE,
+        tags: List<String> = emptyList()
+    ) {
+        if (title.isBlank()) return
         viewModelScope.launch {
-            repository.insertTodoItem(TodoItem(UUID.randomUUID().toString(), Date().time, title))
+            repository.insertTodoItem(
+                TodoItem(
+                    id = UUID.randomUUID().toString(),
+                    createdAt = System.currentTimeMillis(),
+                    title = title.trim(),
+                    description = description.trim(),
+                    dueDate = dueDate,
+                    priority = priority,
+                    tags = tags
+                )
+            )
+        }
+    }
+
+    fun updateTodo(todo: TodoItem) {
+        viewModelScope.launch {
+            repository.updateTodoItem(todo)
+        }
+    }
+
+    fun deleteTodo(todo: TodoItem) {
+        viewModelScope.launch {
+            repository.deleteTodoItem(todo)
         }
     }
 

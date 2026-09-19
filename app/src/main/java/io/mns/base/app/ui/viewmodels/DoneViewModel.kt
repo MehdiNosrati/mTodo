@@ -4,8 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.TodoRepository
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -18,6 +20,12 @@ class DoneViewModel(application: Application) : AndroidViewModel(application), K
 
     fun loadItems(): LiveData<List<DoneItem>> {
         return repository.loadDoneItems()
+    }
+
+    fun delete(item: DoneItem) {
+        viewModelScope.launch {
+            repository.deleteDoneItem(item)
+        }
     }
 
     fun settingClicked() {

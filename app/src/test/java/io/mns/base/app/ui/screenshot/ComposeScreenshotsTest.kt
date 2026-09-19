@@ -49,9 +49,9 @@ class ComposeScreenshotsTest {
     val composeTestRule = createComposeRule()
 
     private val sampleTodos = listOf(
-        TodoItem("1", 1713000000000L, "Design new Jetpack Compose UI"),
-        TodoItem("2", 1713000000000L + 5000L, "Implement Roborazzi Screenshot tests"),
-        TodoItem("3", 1713000000000L + 10000L, "Review pull request changes")
+        TodoItem("1", 1713000000000L, "Design new Jetpack Compose UI", priority = io.mns.base.app.data.Priority.HIGH, dueDate = 1713020000000L, tags = listOf("design", "compose")),
+        TodoItem("2", 1713000000000L + 5000L, "Implement Roborazzi Screenshot tests", priority = io.mns.base.app.data.Priority.MEDIUM, tags = listOf("testing")),
+        TodoItem("3", 1713000000000L + 10000L, "Review pull request changes", priority = io.mns.base.app.data.Priority.LOW)
     )
 
     private val sampleSections = listOf(
@@ -62,8 +62,8 @@ class ComposeScreenshotsTest {
     )
 
     private val sampleDoneItems = listOf(
-        DoneItem("d1", 1712900000000L, "Configure Gradle dependencies"),
-        DoneItem("d2", 1712800000000L, "Setup Room persistence database")
+        DoneItem("d1", 1712900000000L, "Configure Gradle dependencies", priority = io.mns.base.app.data.Priority.HIGH, tags = listOf("build")),
+        DoneItem("d2", 1712800000000L, "Setup Room persistence database", priority = io.mns.base.app.data.Priority.MEDIUM)
     )
 
     @Before
@@ -85,6 +85,7 @@ class ComposeScreenshotsTest {
                     viewModel { DoneViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { SettingViewModel(ApplicationProvider.getApplicationContext()) }
                     viewModel { InsightsViewModel(ApplicationProvider.getApplicationContext()) }
+                    viewModel { io.mns.base.app.ui.viewmodels.TodoDetailViewModel(ApplicationProvider.getApplicationContext()) }
                 }
             )
         }
@@ -177,6 +178,11 @@ class ComposeScreenshotsTest {
                 io.mns.base.app.data.stats.DayActivity("F", "Fri", 0L, 1, false),
                 io.mns.base.app.data.stats.DayActivity("S", "Sat", 0L, 0, false),
                 io.mns.base.app.data.stats.DayActivity("S", "Sun", 0L, 2, true)
+            ),
+            priorityBreakdown = listOf(
+                io.mns.base.app.data.stats.PriorityStat(io.mns.base.app.data.Priority.HIGH, activeCount = 1, doneCount = 3),
+                io.mns.base.app.data.stats.PriorityStat(io.mns.base.app.data.Priority.MEDIUM, activeCount = 1, doneCount = 4),
+                io.mns.base.app.data.stats.PriorityStat(io.mns.base.app.data.Priority.LOW, activeCount = 1, doneCount = 1)
             ),
             motivationalTitle = "On Fire! 🔥",
             motivationalMessage = "You are on a 4-day streak! Keep up the amazing consistency."
@@ -287,4 +293,67 @@ class ComposeScreenshotsTest {
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/add_dialog.png")
     }
+
+    @Test
+    fun testHomeScreenInlineAdd() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                HomeScreenContent(
+                    sections = sampleSections,
+                    initialFabVisible = true,
+                    initialIsAdding = true
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/home_screen_inline_add.png")
+    }
+
+    @Test
+    fun testInlineAddCard() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                Box(modifier = Modifier.padding(16.dp)) {
+                    InlineAddTodoCard(
+                        draftText = "Prepare release notes for v2.2.0",
+                        onDraftChange = {},
+                        onSubmit = {},
+                        onCancel = {},
+                        onExpand = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/inline_add_card.png")
+    }
+
+    @Test
+    fun testTodoDetailScreenEdit() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                TodoDetailScreenContent(
+                    id = "1",
+                    mode = "edit",
+                    todoItem = sampleTodos[0],
+                    onBack = {}
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/todo_detail_edit.png")
+    }
+
+    @Test
+    fun testTodoDetailScreenReadOnly() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                TodoDetailScreenContent(
+                    id = "d1",
+                    mode = "readonly",
+                    doneItem = sampleDoneItems[0],
+                    onBack = {}
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/todo_detail_readonly.png")
+    }
 }
+

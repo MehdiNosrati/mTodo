@@ -43,6 +43,13 @@ sealed class Screen(
 private val NavBrand1 = Color(0xFF6366F1)
 private val NavBrand2 = Color(0xFFA78BFA)
 
+private fun tabIndex(route: String?): Int = when (route) {
+    Screen.Home.route -> 0
+    Screen.Done.route -> 1
+    Screen.Insights.route -> 2
+    else -> -1
+}
+
 @Composable
 fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
     val navController = rememberNavController()
@@ -50,11 +57,12 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val tabs = listOf(Screen.Home, Screen.Done, Screen.Insights)
+    val showBottomBar = currentRoute in listOf(Screen.Home.route, Screen.Done.route, Screen.Insights.route)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (currentRoute != Screen.Settings.route) {
+            if (showBottomBar) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 0.dp,
@@ -115,37 +123,59 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
             enterTransition = {
+                val from = tabIndex(initialState.destination.route)
+                val to = tabIndex(targetState.destination.route)
+                val dir = if (to >= from) 1 else -1
                 fadeIn(tween(220)) + slideInHorizontally(
-                    initialOffsetX = { it / 10 },
+                    initialOffsetX = { dir * it / 8 },
                     animationSpec = tween(220)
                 )
             },
             exitTransition = {
+                val from = tabIndex(initialState.destination.route)
+                val to = tabIndex(targetState.destination.route)
+                val dir = if (to >= from) 1 else -1
                 fadeOut(tween(180)) + slideOutHorizontally(
-                    targetOffsetX = { -it / 10 },
+                    targetOffsetX = { -dir * it / 8 },
                     animationSpec = tween(180)
                 )
             },
             popEnterTransition = {
+                val from = tabIndex(initialState.destination.route)
+                val to = tabIndex(targetState.destination.route)
+                val dir = if (to >= from) 1 else -1
                 fadeIn(tween(220)) + slideInHorizontally(
-                    initialOffsetX = { -it / 10 },
+                    initialOffsetX = { dir * it / 8 },
                     animationSpec = tween(220)
                 )
             },
             popExitTransition = {
+                val from = tabIndex(initialState.destination.route)
+                val to = tabIndex(targetState.destination.route)
+                val dir = if (to >= from) 1 else -1
                 fadeOut(tween(180)) + slideOutHorizontally(
-                    targetOffsetX = { it / 10 },
+                    targetOffsetX = { -dir * it / 8 },
                     animationSpec = tween(180)
                 )
             }
         ) {
             composable(Screen.Home.route) {
-                HomeScreen(onSettingsClick = { navController.navigate(Screen.Settings.route) })
+                HomeScreen(
+                    onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                    onItemClick = { todo -> navController.navigate("todo_detail?id=${todo.id}&mode=edit") },
+                    onExpandAdd = { draft ->
+                        val encoded = android.net.Uri.encode(draft)
+                        navController.navigate("todo_detail?mode=create&draftTitle=$encoded")
+                    }
+                )
             }
             composable(Screen.Done.route) {
-                DoneScreen(onSettingsClick = { navController.navigate(Screen.Settings.route) })
+                DoneScreen(
+                    onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                    onItemClick = { done -> navController.navigate("todo_detail?id=${done.id}&mode=readonly") }
+                )
             }
             composable(Screen.Insights.route) {
                 InsightsScreen(onSettingsClick = { navController.navigate(Screen.Settings.route) })
@@ -181,6 +211,59 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
                     isDark = isDark,
                     onBack = { navController.popBackStack() },
                     onToggleTheme = onToggleTheme
+                )
+            }
+            composable(
+                route = "todo_detail?id={id}&mode={mode}&draftTitle={draftTitle}",
+                arguments = listOf(
+                    androidx.navigation.navArgument("id") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                    androidx.navigation.navArgument("mode") {
+                        type = androidx.navigation.NavType.StringType
+                        defaultValue = "create"
+                    },
+                    androidx.navigation.navArgument("draftTitle") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                ),
+                enterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                exitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                },
+                popEnterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                popExitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                }
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")
+                val mode = backStackEntry.arguments?.getString("mode") ?: "create"
+                val draftTitle = backStackEntry.arguments?.getString("draftTitle")
+                TodoDetailScreen(
+                    id = id,
+                    mode = mode,
+                    draftTitle = draftTitle,
+                    onBack = { navController.popBackStack() }
                 )
             }
         }

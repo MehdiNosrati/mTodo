@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
@@ -38,7 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.mns.base.app.R
+import io.mns.base.app.data.Priority
 import io.mns.base.app.data.stats.DayActivity
+import io.mns.base.app.data.stats.PriorityStat
 import io.mns.base.app.data.stats.TaskStatistics
 import io.mns.base.app.ui.viewmodels.InsightsViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -98,7 +101,8 @@ fun InsightsScreenContent(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         }
     ) { padding ->
@@ -164,6 +168,16 @@ fun InsightsScreenContent(
                     // 4. Productivity Summary
                     item(key = "productivity_summary") {
                         ProductivitySummaryCard(statistics = statistics)
+                    }
+
+                    // 5. Priority Distribution Card
+                    if (statistics.priorityBreakdown.isNotEmpty()) {
+                        item(key = "priority_breakdown") {
+                            PriorityDistributionCard(
+                                breakdown = statistics.priorityBreakdown,
+                                animate = animate
+                            )
+                        }
                     }
                 }
             }
@@ -597,3 +611,105 @@ fun InsightsEmptyState(
         }
     }
 }
+
+@Composable
+private fun PriorityDistributionCard(breakdown: List<PriorityStat>, animate: Boolean = true) {
+    val nonNoneStats = breakdown.filter { it.priority != Priority.NONE }
+    val totalPriorityTasks = nonNoneStats.sumOf { it.activeCount + it.doneCount }
+    if (totalPriorityTasks == 0) return
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder()
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Brand1.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Flag,
+                        contentDescription = null,
+                        tint = Brand1,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Priority Breakdown",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "$totalPriorityTasks prioritized tasks",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                nonNoneStats.reversed().forEach { stat ->
+                    val total = stat.activeCount + stat.doneCount
+                    val rate = if (total > 0) stat.doneCount.toFloat() / total else 0f
+                    val animatedProgress by animateFloatAsState(
+                        targetValue = if (animate) rate else rate,
+                        animationSpec = tween(600),
+                        label = "priorityProgress"
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(stat.priority.color, CircleShape)
+                                )
+                                Text(
+                                    text = stat.priority.label,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Text(
+                                text = "${stat.doneCount} done · ${stat.activeCount} active",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        LinearProgressIndicator(
+                            progress = { animatedProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = stat.priority.color,
+                            trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

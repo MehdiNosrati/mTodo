@@ -33,7 +33,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
 import io.mns.base.app.data.DoneItem
+import io.mns.base.app.data.Priority
 import io.mns.base.app.ui.viewmodels.DoneViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -49,12 +51,14 @@ private val DoneBrush = Brush.linearGradient(
 @Composable
 fun DoneScreen(
     onSettingsClick: () -> Unit,
+    onItemClick: (DoneItem) -> Unit = {},
     viewModel: DoneViewModel = koinViewModel()
 ) {
     val items by viewModel.loadItems().observeAsState(initial = emptyList())
     DoneScreenContent(
         items = items,
-        onSettingsClick = onSettingsClick
+        onSettingsClick = onSettingsClick,
+        onItemClick = onItemClick
     )
 }
 
@@ -63,6 +67,7 @@ fun DoneScreen(
 fun DoneScreenContent(
     items: List<DoneItem>,
     onSettingsClick: () -> Unit = {},
+    onItemClick: (DoneItem) -> Unit = {},
     animate: Boolean = true
 ) {
     Scaffold(
@@ -90,7 +95,8 @@ fun DoneScreenContent(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent
-                )
+                ),
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         }
     ) { padding ->
@@ -135,7 +141,11 @@ fun DoneScreenContent(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     itemsIndexed(items, key = { _, item -> item.id }) { _, item ->
-                        DoneItemRow(item = item, modifier = Modifier.animateItem())
+                        DoneItemRow(
+                            item = item,
+                            onClick = { onItemClick(item) },
+                            modifier = Modifier.animateItem()
+                        )
                     }
                 }
             }
@@ -196,7 +206,11 @@ fun DoneEmptyState(
 }
 
 @Composable
-fun DoneItemRow(item: DoneItem, modifier: Modifier = Modifier) {
+fun DoneItemRow(
+    item: DoneItem,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -209,6 +223,7 @@ fun DoneItemRow(item: DoneItem, modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -217,7 +232,7 @@ fun DoneItemRow(item: DoneItem, modifier: Modifier = Modifier) {
             Box(
                 modifier = Modifier
                     .width(3.dp)
-                    .height(62.dp)
+                    .height(64.dp)
                     .background(
                         DoneBrush,
                         RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
@@ -226,7 +241,7 @@ fun DoneItemRow(item: DoneItem, modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 14.dp, vertical = 14.dp),
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -243,17 +258,45 @@ fun DoneItemRow(item: DoneItem, modifier: Modifier = Modifier) {
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                Text(
-                    text = item.title,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        textDecoration = TextDecoration.LineThrough
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium,
+                            textDecoration = TextDecoration.LineThrough
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (item.priority != Priority.NONE || item.tags.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (item.priority != Priority.NONE) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(item.priority.color, CircleShape)
+                                )
+                                Text(
+                                    text = item.priority.label,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                    color = item.priority.color
+                                )
+                            }
+                            item.tags.take(3).forEach { tag ->
+                                Text(
+                                    text = "#$tag",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))

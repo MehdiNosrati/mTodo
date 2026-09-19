@@ -1,11 +1,19 @@
 package io.mns.base.app.data.stats
 
+import io.mns.base.app.data.Priority
+
 data class DayActivity(
     val dayLabel: String,
     val dayName: String,
     val timestampMs: Long,
     val count: Int,
     val isToday: Boolean
+)
+
+data class PriorityStat(
+    val priority: Priority,
+    val activeCount: Int,
+    val doneCount: Int
 )
 
 data class TaskStatistics(
@@ -17,6 +25,7 @@ data class TaskStatistics(
     val currentStreakDays: Int = 0,
     val bestDayOfWeek: String = "None",
     val weeklyActivity: List<DayActivity> = emptyList(),
+    val priorityBreakdown: List<PriorityStat> = emptyList(),
     val motivationalTitle: String = "Stay Focused",
     val motivationalMessage: String = "Complete your tasks to build momentum and achieve your goals."
 ) {

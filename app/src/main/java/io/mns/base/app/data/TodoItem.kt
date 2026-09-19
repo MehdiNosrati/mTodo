@@ -7,5 +7,9 @@ import androidx.room.PrimaryKey
 data class TodoItem(
     @PrimaryKey val id: String,
     val createdAt: Long,
-    val title: String
+    val title: String,
+    val description: String = "",
+    val dueDate: Long? = null,
+    val priority: Priority = Priority.NONE,
+    val tags: List<String> = emptyList()
 )

@@ -14,6 +14,7 @@ object KoinModules {
 
         single {
             Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
+                .addMigrations(TodoDataBase.MIGRATION_2_3)
                 .fallbackToDestructiveMigration()
                 .build()
         }
@@ -26,5 +27,6 @@ object KoinModules {
         viewModel { DoneViewModel(get()) }
         viewModel { SettingViewModel(get()) }
         viewModel { io.mns.base.app.ui.viewmodels.InsightsViewModel(get()) }
+        viewModel { io.mns.base.app.ui.viewmodels.TodoDetailViewModel(get()) }
     }
 }

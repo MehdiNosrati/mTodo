@@ -15,19 +15,19 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="screens/home.png" width="270" alt="Home - Active Tasks with Sticky Headers">
+  <img src="screens/home.png" width="270" alt="Home - Active Tasks with Priority & Tags">
   &nbsp;&nbsp;
-  <img src="screens/done.png" width="270" alt="Done - Completed Tasks">
+  <img src="screens/inline_add.png" width="270" alt="Inline Add Task UX">
   &nbsp;&nbsp;
-  <img src="screens/insights.png" width="270" alt="Task Statistics & Completion Insights">
+  <img src="screens/todo_detail.png" width="270" alt="Task Details - Priority, Due Date, Tags">
 </p>
 
 <p align="center">
+  <img src="screens/done.png" width="270" alt="Done - Completed Tasks with Tags">
+  &nbsp;&nbsp;
+  <img src="screens/insights.png" width="270" alt="Insights - Statistics & Priority Breakdown">
+  &nbsp;&nbsp;
   <img src="screens/settings.png" width="270" alt="Settings & Appearance">
-  &nbsp;&nbsp;
-  <img src="screens/home_empty.png" width="270" alt="Empty Home State">
-  &nbsp;&nbsp;
-  <img src="screens/add_dialog.png" width="270" alt="Add Task Dialog">
 </p>
 
 ---
@@ -35,16 +35,25 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
 ## ✨ Features
 
 - **Modern Jetpack Compose UI**: 100% declarative UI built with Material 3, dynamic cards, and soft indigo/violet accents.
+- **Inline Task Creation**: Fast and non-intrusive inline drafting card at the top of the list — tap Enter or click away to save immediately.
+- **Rich Task Metadata**:
+  - **Priority System**: High, Medium, Low, and None with distinct color indicators across lists and analytics.
+  - **Due Dates & Times**: Due date badges with overdue indicators and quick presets (Today 6 PM, Tomorrow 9 AM, Custom).
+  - **Tagging System**: Organize tasks with custom tags and quick tag chips.
+  - **Detailed Descriptions**: Add detailed notes and descriptions to tasks.
+- **Dedicated Task Details & Edit Screen**: View and modify task metadata, or inspect completed task history in read-only mode.
 - **Smart Date Segmentation**: Automatically groups active tasks into **Today**, **Yesterday**, and **Older** sections with sticky headers.
-- **Task Statistics & Completion Insights**: Real-time productivity metrics, completion rates, daily consistency streaks, and 7-day visual activity bar chart.
-- **Fluid Spring Animations**: Smooth item insertion, completion, and reordering animations powered by Compose `animateItem()`.
-- **Dark & Light Mode**: Seamless theme switching with system-default and user-selected appearance options.
+- **Task Statistics & Completion Insights**: Real-time productivity metrics, completion rates, daily consistency streaks, 7-day visual activity bar chart, and priority distribution breakdown.
+- **Fluid Spring Animations & Symmetric Navigation**: Smooth item insertion, completion, and reordering animations powered by Compose `animateItem()`, plus directional slide transitions between tabs.
+- **Edge-to-Edge Dark & Light Mode**: Seamless theme switching with system-default and user-selected appearance options, with clear status bar contrast in both modes.
+- **Modern Adaptive Launcher & Splash**: Crisp indigo/violet vector branding on Android 12+ splash screen and app icons.
 - **Multilingual Support**: Fully localized in English (`en`) and Persian (`fa`).
-- **Offline-First Persistence**: Local Room SQLite storage with reactive Kotlin `Flow` observables.
+- **Offline-First Persistence**: Local Room SQLite storage (v3 migration) with reactive Kotlin `Flow` observables.
+- **Target SDK 36**: Optimized for Android 16 with security and performance improvements.
 - **Comprehensive Automated Test Suite**:
   - Unit tests for ViewModels and Repositories with MockK & Coroutines Test.
-  - In-memory Room database integration tests.
-  - Roborazzi Compose screenshot tests with pixel-accurate baseline goldens.
+  - In-memory Room database integration and migration tests.
+  - Roborazzi Compose screenshot tests with 17 pixel-accurate baseline goldens.
 
 ---
 
@@ -54,7 +63,7 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
 - **Architecture**: MVVM / Clean Architecture (UI &rarr; ViewModel &rarr; Repository &rarr; Room DAO)
 - **Asynchronous / Reactive**: Kotlin Coroutines & `Flow` / `LiveData`
 - **Dependency Injection**: [Koin](https://insert-koin.io/)
-- **Local Storage**: [Room Database](https://developer.android.com/training/data-storage/room)
+- **Local Storage**: [Room Database](https://developer.android.com/training/data-storage/room) (SQLite)
 - **Screenshot & Regression Testing**: [Roborazzi](https://github.com/takahirom/roborazzi) + Robolectric Native Graphics
 - **Build System**: Gradle 8.9, Android Gradle Plugin 8.7.3, Kotlin 2.0.21, and Gradle Version Catalog (`libs.versions.toml`)
 
@@ -89,12 +98,17 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
 - [x] Modernize UI with Jetpack Compose & Material 3
 - [x] Basic CRUD on tasks
+- [x] Inline task drafting UX
+- [x] Priority system (High / Med / Low / None)
+- [x] Due dates, times, and tags metadata
+- [x] Dedicated task detail and edit screen
 - [x] Time period segmentation (Today / Yesterday / Older)
-- [x] Dark & Light themes
+- [x] Task statistics & completion insights + priority distribution
+- [x] Dark & Light themes with high-contrast status bars
 - [x] Multilingual support: `en`, `fa`
 - [x] Automated unit and Room database test coverage
 - [x] Roborazzi screenshot testing suite
-- [x] Task statistics & completion insights
+- [x] Target SDK 36 update
 - [ ] Cloud synchronization & backup
 - [ ] Undo completion / trash recovery
 
