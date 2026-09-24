@@ -273,8 +273,7 @@ fun TodoDetailScreenContent(
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
-                ),
-                windowInsets = WindowInsets(0, 0, 0, 0)
+                )
             )
         }
     ) { innerPadding ->
