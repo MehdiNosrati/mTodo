@@ -57,6 +57,9 @@ class ComposeScreenshotsTest {
             priority = io.mns.base.app.data.Priority.HIGH,
             dueDate = 1713020000000L,
             tags = listOf("design", "compose"),
+            isPinned = true,
+            category = "Work",
+            repeatInterval = io.mns.base.app.data.RepeatInterval.WEEKDAYS,
             subtasks = listOf(
                 io.mns.base.app.data.Subtask("s1", "Create Figma design tokens", isDone = true),
                 io.mns.base.app.data.Subtask("s2", "Build Material 3 top bars & chips", isDone = true),
@@ -69,6 +72,7 @@ class ComposeScreenshotsTest {
             title = "Implement Roborazzi Screenshot tests",
             priority = io.mns.base.app.data.Priority.MEDIUM,
             tags = listOf("testing"),
+            category = "Work",
             subtasks = listOf(
                 io.mns.base.app.data.Subtask("s4", "Record golden baseline images", isDone = true)
             )
@@ -77,7 +81,8 @@ class ComposeScreenshotsTest {
             id = "3",
             createdAt = 1713000000000L + 10000L,
             title = "Review pull request changes",
-            priority = io.mns.base.app.data.Priority.LOW
+            priority = io.mns.base.app.data.Priority.LOW,
+            category = "Personal"
         )
     )
 
@@ -96,12 +101,13 @@ class ComposeScreenshotsTest {
             description = "Setup libs.versions.toml and targetSdk 36",
             priority = io.mns.base.app.data.Priority.HIGH,
             tags = listOf("build"),
+            category = "Work",
             subtasks = listOf(
                 io.mns.base.app.data.Subtask("s5", "Update AGP to 8.7.3", isDone = true),
-                io.mns.base.app.data.Subtask("s6", "Configure Room SQLite v4", isDone = true)
+                io.mns.base.app.data.Subtask("s6", "Configure Room SQLite v5", isDone = true)
             )
         ),
-        DoneItem("d2", 1712800000000L, "Setup Room persistence database", priority = io.mns.base.app.data.Priority.MEDIUM)
+        DoneItem("d2", 1712800000000L, "Setup Room persistence database", priority = io.mns.base.app.data.Priority.MEDIUM, category = "Personal")
     )
 
     @Before
@@ -144,6 +150,7 @@ class ComposeScreenshotsTest {
             MTodoTheme(darkTheme = false) {
                 HomeScreenContent(
                     sections = sampleSections,
+                    availableCategories = listOf("Work", "Personal", "Ideas"),
                     initialFabVisible = true
                 )
             }
@@ -326,6 +333,7 @@ class ComposeScreenshotsTest {
             MTodoTheme(darkTheme = false) {
                 HomeScreenContent(
                     sections = sampleSections,
+                    availableCategories = listOf("Work", "Personal", "Ideas"),
                     initialFabVisible = true,
                     initialIsAdding = true
                 )
