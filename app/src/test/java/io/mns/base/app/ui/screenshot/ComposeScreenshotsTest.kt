@@ -49,9 +49,36 @@ class ComposeScreenshotsTest {
     val composeTestRule = createComposeRule()
 
     private val sampleTodos = listOf(
-        TodoItem("1", 1713000000000L, "Design new Jetpack Compose UI", priority = io.mns.base.app.data.Priority.HIGH, dueDate = 1713020000000L, tags = listOf("design", "compose")),
-        TodoItem("2", 1713000000000L + 5000L, "Implement Roborazzi Screenshot tests", priority = io.mns.base.app.data.Priority.MEDIUM, tags = listOf("testing")),
-        TodoItem("3", 1713000000000L + 10000L, "Review pull request changes", priority = io.mns.base.app.data.Priority.LOW)
+        TodoItem(
+            id = "1",
+            createdAt = 1713000000000L,
+            title = "Design new Jetpack Compose UI",
+            description = "Revamp UI with Material 3, spring animations, and status bar insets.",
+            priority = io.mns.base.app.data.Priority.HIGH,
+            dueDate = 1713020000000L,
+            tags = listOf("design", "compose"),
+            subtasks = listOf(
+                io.mns.base.app.data.Subtask("s1", "Create Figma design tokens", isDone = true),
+                io.mns.base.app.data.Subtask("s2", "Build Material 3 top bars & chips", isDone = true),
+                io.mns.base.app.data.Subtask("s3", "Implement checklist animations", isDone = false)
+            )
+        ),
+        TodoItem(
+            id = "2",
+            createdAt = 1713000000000L + 5000L,
+            title = "Implement Roborazzi Screenshot tests",
+            priority = io.mns.base.app.data.Priority.MEDIUM,
+            tags = listOf("testing"),
+            subtasks = listOf(
+                io.mns.base.app.data.Subtask("s4", "Record golden baseline images", isDone = true)
+            )
+        ),
+        TodoItem(
+            id = "3",
+            createdAt = 1713000000000L + 10000L,
+            title = "Review pull request changes",
+            priority = io.mns.base.app.data.Priority.LOW
+        )
     )
 
     private val sampleSections = listOf(
@@ -62,7 +89,18 @@ class ComposeScreenshotsTest {
     )
 
     private val sampleDoneItems = listOf(
-        DoneItem("d1", 1712900000000L, "Configure Gradle dependencies", priority = io.mns.base.app.data.Priority.HIGH, tags = listOf("build")),
+        DoneItem(
+            id = "d1",
+            doneAt = 1712900000000L,
+            title = "Configure Gradle dependencies",
+            description = "Setup libs.versions.toml and targetSdk 36",
+            priority = io.mns.base.app.data.Priority.HIGH,
+            tags = listOf("build"),
+            subtasks = listOf(
+                io.mns.base.app.data.Subtask("s5", "Update AGP to 8.7.3", isDone = true),
+                io.mns.base.app.data.Subtask("s6", "Configure Room SQLite v4", isDone = true)
+            )
+        ),
         DoneItem("d2", 1712800000000L, "Setup Room persistence database", priority = io.mns.base.app.data.Priority.MEDIUM)
     )
 

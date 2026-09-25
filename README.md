@@ -15,19 +15,19 @@ A modern, minimalist, and lightweight Todo app for Android built entirely with *
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="screens/home.png" width="270" alt="Home - Active Tasks with Priority & Tags">
+  <img src="screens/home.png" width="270" alt="Home - Search, Filters, Priority & Subtasks">
   &nbsp;&nbsp;
   <img src="screens/inline_add.png" width="270" alt="Inline Add Task UX">
   &nbsp;&nbsp;
-  <img src="screens/todo_detail.png" width="270" alt="Task Details - Priority, Due Date, Tags">
+  <img src="screens/todo_detail.png" width="270" alt="Task Details - Subtasks Checklist, Priority & Due Date">
 </p>
 
 <p align="center">
-  <img src="screens/done.png" width="270" alt="Done - Completed Tasks with Tags">
+  <img src="screens/done.png" width="270" alt="Done - Completed Tasks & Swipe Actions">
   &nbsp;&nbsp;
-  <img src="screens/insights.png" width="270" alt="Insights - Statistics & Priority Breakdown">
+  <img src="screens/insights.png" width="270" alt="Insights - Productivity Trends & Priority Stats">
   &nbsp;&nbsp;
-  <img src="screens/settings.png" width="270" alt="Settings & Appearance">
+  <img src="screens/settings.png" width="270" alt="Settings - Sort Order & Data Backup/Restore">
 </p>
 
 ---
