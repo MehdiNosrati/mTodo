@@ -3,6 +3,7 @@ package io.mns.base.app.data.backup
 import android.content.Context
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.Priority
+import io.mns.base.app.data.RepeatInterval
 import io.mns.base.app.data.Subtask
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoRepository
@@ -22,7 +23,7 @@ class BackupManager(
         val doneItems = repository.getAllDoneList()
 
         val root = JSONObject()
-        root.put("version", 1)
+        root.put("version", 2)
         root.put("exportedAt", System.currentTimeMillis())
 
         val todosArray = JSONArray()
@@ -49,6 +50,10 @@ class BackupManager(
                     subArr.put(sObj)
                 }
                 put("subtasks", subArr)
+                put("repeatInterval", item.repeatInterval.name)
+                put("isPinned", item.isPinned)
+                put("category", item.category)
+                if (item.deletedAt != null) put("deletedAt", item.deletedAt)
             }
             todosArray.put(obj)
         }
@@ -79,6 +84,10 @@ class BackupManager(
                     subArr.put(sObj)
                 }
                 put("subtasks", subArr)
+                put("repeatInterval", item.repeatInterval.name)
+                put("isPinned", item.isPinned)
+                put("category", item.category)
+                if (item.deletedAt != null) put("deletedAt", item.deletedAt)
             }
             doneArray.put(obj)
         }
@@ -133,7 +142,11 @@ class BackupManager(
                         dueDate = if (obj.has("dueDate") && !obj.isNull("dueDate")) obj.optLong("dueDate") else null,
                         priority = Priority.fromLevel(obj.optInt("priority", 0)),
                         tags = tagsList,
-                        subtasks = subtasksList
+                        subtasks = subtasksList,
+                        repeatInterval = RepeatInterval.fromName(obj.optString("repeatInterval", "NONE")),
+                        isPinned = obj.optBoolean("isPinned", false),
+                        category = obj.optString("category", "General"),
+                        deletedAt = if (obj.has("deletedAt") && !obj.isNull("deletedAt")) obj.optLong("deletedAt") else null
                     )
                 )
             }
@@ -177,7 +190,11 @@ class BackupManager(
                         dueDate = if (obj.has("dueDate") && !obj.isNull("dueDate")) obj.optLong("dueDate") else null,
                         priority = Priority.fromLevel(obj.optInt("priority", 0)),
                         tags = tagsList,
-                        subtasks = subtasksList
+                        subtasks = subtasksList,
+                        repeatInterval = RepeatInterval.fromName(obj.optString("repeatInterval", "NONE")),
+                        isPinned = obj.optBoolean("isPinned", false),
+                        category = obj.optString("category", "General"),
+                        deletedAt = if (obj.has("deletedAt") && !obj.isNull("deletedAt")) obj.optLong("deletedAt") else null
                     )
                 )
             }

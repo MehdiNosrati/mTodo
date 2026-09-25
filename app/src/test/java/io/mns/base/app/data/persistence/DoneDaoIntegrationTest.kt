@@ -8,6 +8,7 @@ import io.mns.base.app.data.DoneItem
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -50,5 +51,25 @@ class DoneDaoIntegrationTest {
             assertEquals("Workout", items[0].title)
             assertEquals("d1", items[0].id)
         }
+    }
+
+    @Test
+    fun softDelete_and_restoreDoneItem() = runTest {
+        val doneItem = DoneItem(id = "d2", doneAt = 3000L, title = "Clean Desk")
+        doneDao.insert(doneItem)
+
+        doneDao.softDelete("d2")
+
+        val activeList = doneDao.getAllDoneList()
+        assertTrue(activeList.none { it.id == "d2" })
+
+        val trashedList = doneDao.getTrashedDoneList()
+        assertEquals(1, trashedList.size)
+        assertEquals("d2", trashedList[0].id)
+
+        doneDao.restoreFromTrash("d2")
+        val restoredList = doneDao.getAllDoneList()
+        assertEquals(1, restoredList.size)
+        assertEquals("d2", restoredList[0].id)
     }
 }

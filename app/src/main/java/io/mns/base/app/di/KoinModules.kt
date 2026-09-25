@@ -14,7 +14,7 @@ object KoinModules {
 
         single {
             Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
-                .addMigrations(TodoDataBase.MIGRATION_2_3, TodoDataBase.MIGRATION_3_4)
+                .addMigrations(TodoDataBase.MIGRATION_2_3, TodoDataBase.MIGRATION_3_4, TodoDataBase.MIGRATION_4_5)
                 .fallbackToDestructiveMigration()
                 .build()
         }

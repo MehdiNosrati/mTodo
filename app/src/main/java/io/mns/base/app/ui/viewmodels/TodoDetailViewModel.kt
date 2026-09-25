@@ -7,15 +7,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.Priority
+import io.mns.base.app.data.RepeatInterval
+import io.mns.base.app.data.Subtask
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoRepository
+import io.mns.base.app.notifications.ReminderManager
 import java.util.UUID
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-
-import io.mns.base.app.data.Subtask
-import io.mns.base.app.notifications.ReminderManager
 
 class TodoDetailViewModel(application: Application) : AndroidViewModel(application), KoinComponent {
     private val repository: TodoRepository by inject()
@@ -26,6 +26,8 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _doneItem = MutableLiveData<DoneItem?>()
     val doneItem: LiveData<DoneItem?> get() = _doneItem
+
+    fun areNotificationsEnabled(): Boolean = reminderManager.areNotificationsEnabled()
 
     fun loadTodo(id: String) {
         viewModelScope.launch {
@@ -47,6 +49,9 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
         priority: Priority,
         tags: List<String>,
         subtasks: List<Subtask> = emptyList(),
+        repeatInterval: RepeatInterval = RepeatInterval.NONE,
+        isPinned: Boolean = false,
+        category: String = "General",
         onComplete: () -> Unit
     ) {
         if (title.isBlank()) return
@@ -59,7 +64,10 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
                     dueDate = dueDate,
                     priority = priority,
                     tags = tags,
-                    subtasks = subtasks
+                    subtasks = subtasks,
+                    repeatInterval = repeatInterval,
+                    isPinned = isPinned,
+                    category = category
                 )
                 repository.updateTodoItem(updated)
                 updated
@@ -72,7 +80,10 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
                     dueDate = dueDate,
                     priority = priority,
                     tags = tags,
-                    subtasks = subtasks
+                    subtasks = subtasks,
+                    repeatInterval = repeatInterval,
+                    isPinned = isPinned,
+                    category = category
                 )
                 repository.insertTodoItem(inserted)
                 inserted
@@ -90,7 +101,11 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
 
     fun completeTodo(todo: TodoItem, onComplete: () -> Unit) {
         viewModelScope.launch {
-            repository.done(todo)
+            val next = repository.done(todo)
+            reminderManager.cancelReminder(todo.id)
+            if (next?.dueDate != null && next.dueDate > System.currentTimeMillis()) {
+                reminderManager.scheduleReminder(next)
+            }
             onComplete()
         }
     }
@@ -98,6 +113,7 @@ class TodoDetailViewModel(application: Application) : AndroidViewModel(applicati
     fun deleteTodo(todo: TodoItem, onComplete: () -> Unit) {
         viewModelScope.launch {
             repository.deleteTodoItem(todo)
+            reminderManager.cancelReminder(todo.id)
             onComplete()
         }
     }

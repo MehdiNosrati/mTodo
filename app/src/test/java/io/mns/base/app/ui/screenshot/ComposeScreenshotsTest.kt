@@ -319,22 +319,6 @@ class ComposeScreenshotsTest {
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/gradient_fab.png")
     }
 
-    @Test
-    fun testAddDialog() {
-        composeTestRule.setContent {
-            MTodoTheme(darkTheme = false) {
-                Box(modifier = Modifier.padding(16.dp)) {
-                    AddTodoDialogCard(
-                        text = "Buy fresh coffee beans",
-                        onTextChange = {},
-                        onDismiss = {},
-                        onAdd = {}
-                    )
-                }
-            }
-        }
-        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/add_dialog.png")
-    }
 
     @Test
     fun testHomeScreenInlineAdd() {

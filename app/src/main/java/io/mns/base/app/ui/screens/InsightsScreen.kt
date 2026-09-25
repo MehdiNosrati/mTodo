@@ -150,7 +150,12 @@ fun InsightsScreenContent(
                         MotivationalCard(statistics = statistics)
                     }
 
-                    // 2. 2x2 Metric Cards Grid
+                    // 2. Daily Goal Ring
+                    item(key = "daily_goal_ring") {
+                        DailyGoalRingCard(statistics = statistics, animate = animate)
+                    }
+
+                    // 3. 2x2 Metric Cards Grid
                     item(key = "kpi_grid") {
                         MetricKpiGrid(statistics = statistics, animate = animate)
                     }
@@ -707,6 +712,85 @@ private fun PriorityDistributionCard(breakdown: List<PriorityStat>, animate: Boo
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyGoalRingCard(statistics: TaskStatistics, animate: Boolean) {
+    val progress = statistics.dailyGoalProgress
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (animate) progress else progress,
+        animationSpec = tween(700),
+        label = "dailyGoalRing"
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = CardDefaults.outlinedCardBorder()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier.size(76.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier.fillMaxSize(),
+                    strokeWidth = 7.dp,
+                    color = if (statistics.isDailyGoalReached) GreenBrand else Brand1,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+                Text(
+                    text = "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = if (statistics.isDailyGoalReached) GreenBrand else Brand1
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Daily Target",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (statistics.currentStreakDays > 0) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = OrangeBrand.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = "🔥 ${statistics.currentStreakDays}d streak",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = OrangeBrand,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+                Text(
+                    text = "${statistics.completedToday} of ${statistics.dailyGoal} tasks finished today",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = if (statistics.isDailyGoalReached) "Target achieved! Great work! 🎉" else "Keep going to reach today's target!",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                    color = if (statistics.isDailyGoalReached) GreenBrand else Brand1
+                )
             }
         }
     }

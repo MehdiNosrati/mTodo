@@ -1,6 +1,7 @@
 package io.mns.base.app.ui.viewmodels
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -14,6 +15,7 @@ import org.koin.core.component.inject
 
 class InsightsViewModel(application: Application) : AndroidViewModel(application), KoinComponent {
     private val repository: TodoRepository by inject()
+    private val prefs = application.getSharedPreferences("mtodo_settings", Context.MODE_PRIVATE)
 
     private val _statistics = MediatorLiveData<TaskStatistics>()
     val statistics: LiveData<TaskStatistics> get() = _statistics
@@ -37,6 +39,11 @@ class InsightsViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun recompute() {
-        _statistics.value = StatisticsCalculator.calculate(currentTodos, currentDoneItems)
+        val dailyGoal = prefs.getInt("pref_daily_goal", 3)
+        _statistics.value = StatisticsCalculator.calculate(
+            todos = currentTodos,
+            doneItems = currentDoneItems,
+            dailyGoal = dailyGoal
+        )
     }
 }

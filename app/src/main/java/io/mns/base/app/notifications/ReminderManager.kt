@@ -21,6 +21,8 @@ class ReminderManager(private val context: Context) {
 
         const val ACTION_REMINDER = "io.mns.base.app.ACTION_REMINDER"
         const val ACTION_MARK_DONE = "io.mns.base.app.ACTION_MARK_DONE"
+        const val ACTION_SNOOZE_15M = "io.mns.base.app.ACTION_SNOOZE_15M"
+        const val ACTION_SNOOZE_1H = "io.mns.base.app.ACTION_SNOOZE_1H"
     }
 
     init {
@@ -42,6 +44,11 @@ class ReminderManager(private val context: Context) {
         }
     }
 
+    fun areNotificationsEnabled(): Boolean {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return false
+        return notificationManager.areNotificationsEnabled()
+    }
+
     fun scheduleReminder(item: TodoItem) {
         val dueTime = item.dueDate ?: return
         if (dueTime <= System.currentTimeMillis()) return
@@ -54,7 +61,7 @@ class ReminderManager(private val context: Context) {
                 if (alarmManager.canScheduleExactAlarms()) {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
                 } else {
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
                 }
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
@@ -62,7 +69,11 @@ class ReminderManager(private val context: Context) {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
             }
         } catch (e: SecurityException) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, dueTime, pendingIntent)
+            }
         }
     }
 

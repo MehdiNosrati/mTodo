@@ -41,4 +41,14 @@
             android:textSize="11sp"
             android:visibility="gone" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/widget_btn_check"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="6dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Mark Done"
+        android:padding="6dp"
+        android:src="@drawable/ic_widget_check" />
 </LinearLayout>

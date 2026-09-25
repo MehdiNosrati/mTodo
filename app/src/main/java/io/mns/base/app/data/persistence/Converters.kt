@@ -60,4 +60,14 @@ class Converters {
             emptyList()
         }
     }
+
+    @TypeConverter
+    fun fromRepeatInterval(interval: io.mns.base.app.data.RepeatInterval?): String {
+        return (interval ?: io.mns.base.app.data.RepeatInterval.NONE).name
+    }
+
+    @TypeConverter
+    fun toRepeatInterval(name: String?): io.mns.base.app.data.RepeatInterval {
+        return io.mns.base.app.data.RepeatInterval.fromName(name)
+    }
 }

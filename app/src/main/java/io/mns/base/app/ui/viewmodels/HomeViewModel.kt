@@ -4,10 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import io.mns.base.app.data.Priority
+import io.mns.base.app.data.RepeatInterval
 import io.mns.base.app.data.SortOrder
+import io.mns.base.app.data.Subtask
 import io.mns.base.app.data.TaskFilter
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoListSection
@@ -46,6 +47,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
     private val _availableTags = MutableStateFlow<List<String>>(emptyList())
     val availableTags: StateFlow<List<String>> = _availableTags.asStateFlow()
 
+    private val _availableCategories = MutableStateFlow<List<String>>(listOf("General", "Work", "Personal", "Shopping"))
+    val availableCategories: StateFlow<List<String>> = _availableCategories.asStateFlow()
+
+    private val _selectedTodoIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedTodoIds: StateFlow<Set<String>> = _selectedTodoIds.asStateFlow()
+
     val rawTodos: LiveData<List<TodoItem>> = repository.loadTodoItems()
 
     private val _sections = androidx.lifecycle.MediatorLiveData<List<TodoListSection>>()
@@ -70,6 +77,62 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
         updateFilteredSections()
     }
 
+    fun toggleSelection(todoId: String) {
+        val current = _selectedTodoIds.value
+        _selectedTodoIds.value = if (current.contains(todoId)) current - todoId else current + todoId
+    }
+
+    fun selectAll() {
+        val allIds = rawTodos.value?.map { it.id }?.toSet() ?: emptySet()
+        _selectedTodoIds.value = allIds
+    }
+
+    fun clearSelection() {
+        _selectedTodoIds.value = emptySet()
+    }
+
+    fun batchDone() {
+        val selectedSet = _selectedTodoIds.value
+        val items = rawTodos.value?.filter { selectedSet.contains(it.id) } ?: emptyList()
+        if (items.isEmpty()) return
+        viewModelScope.launch {
+            val nextItems = repository.batchDone(items)
+            items.forEach { reminderManager.cancelReminder(it.id) }
+            nextItems.forEach { next ->
+                if (next.dueDate != null && next.dueDate > System.currentTimeMillis()) {
+                    reminderManager.scheduleReminder(next)
+                }
+            }
+            clearSelection()
+        }
+    }
+
+    fun batchDelete() {
+        val selectedSet = _selectedTodoIds.value
+        val items = rawTodos.value?.filter { selectedSet.contains(it.id) } ?: emptyList()
+        if (items.isEmpty()) return
+        viewModelScope.launch {
+            repository.batchDelete(items)
+            items.forEach { reminderManager.cancelReminder(it.id) }
+            clearSelection()
+        }
+    }
+
+    fun batchTogglePin() {
+        val selectedSet = _selectedTodoIds.value
+        val items = rawTodos.value?.filter { selectedSet.contains(it.id) } ?: emptyList()
+        if (items.isEmpty()) return
+        val shouldPin = items.any { !it.isPinned }
+        viewModelScope.launch {
+            repository.batchSetPin(items, shouldPin)
+            clearSelection()
+        }
+    }
+
+    fun togglePin(todo: TodoItem) {
+        updateTodo(todo.copy(isPinned = !todo.isPinned))
+    }
+
     private fun updateFilteredSections() {
         val items = rawTodos.value ?: emptyList()
 
@@ -77,6 +140,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
         val tagsSet = mutableSetOf<String>()
         items.forEach { tagsSet.addAll(it.tags) }
         _availableTags.value = tagsSet.sorted()
+
+        // Extract available unique categories
+        val defaultCategories = listOf("General", "Work", "Personal", "Shopping")
+        val categorySet = mutableSetOf<String>().apply { addAll(defaultCategories) }
+        items.forEach { if (it.category.isNotBlank()) categorySet.add(it.category) }
+        _availableCategories.value = categorySet.toList()
 
         val query = _searchQuery.value.trim()
         val filter = _selectedFilter.value
@@ -93,21 +162,32 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
                 is TaskFilter.All -> true
                 is TaskFilter.ByPriority -> item.priority == filter.priority
                 is TaskFilter.ByTag -> item.tags.contains(filter.tag)
+                is TaskFilter.ByCategory -> item.category.equals(filter.category, ignoreCase = true)
                 is TaskFilter.Overdue -> item.dueDate != null && item.dueDate < now
             }
 
             matchesQuery && matchesFilter
         }
 
-        // Sort and Section
-        val resultSections = when (sort) {
-            SortOrder.CREATION_DATE_DESC -> groupByHour(filtered)
-            SortOrder.PRIORITY_DESC -> groupByPriority(filtered)
-            SortOrder.DUE_DATE_ASC -> groupByDueDate(filtered)
-            SortOrder.TITLE_ASC -> groupByAlphabet(filtered)
+        // Pinned tasks separation: Pinned tasks stay fixed at the top
+        val pinned = filtered.filter { it.isPinned }
+        val unpinned = filtered.filter { !it.isPinned }
+
+        val pinnedSection = if (pinned.isNotEmpty()) {
+            listOf(TodoListSection.Header(-999L, "📌 Pinned")) + pinned.map { TodoListSection.Item(it) }
+        } else {
+            emptyList()
         }
 
-        _sections.value = resultSections
+        // Sort and Section remaining unpinned items
+        val unpinnedSections = when (sort) {
+            SortOrder.CREATION_DATE_DESC -> groupByHour(unpinned)
+            SortOrder.PRIORITY_DESC -> groupByPriority(unpinned)
+            SortOrder.DUE_DATE_ASC -> groupByDueDate(unpinned)
+            SortOrder.TITLE_ASC -> groupByAlphabet(unpinned)
+        }
+
+        _sections.value = pinnedSection + unpinnedSections
     }
 
     fun insertItem(title: String) {
@@ -120,7 +200,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
         dueDate: Long? = null,
         priority: Priority = Priority.NONE,
         tags: List<String> = emptyList(),
-        subtasks: List<io.mns.base.app.data.Subtask> = emptyList()
+        subtasks: List<Subtask> = emptyList(),
+        repeatInterval: RepeatInterval = RepeatInterval.NONE,
+        isPinned: Boolean = false,
+        category: String = "General"
     ) {
         if (title.isBlank()) return
         viewModelScope.launch {
@@ -132,7 +215,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
                 dueDate = dueDate,
                 priority = priority,
                 tags = tags,
-                subtasks = subtasks
+                subtasks = subtasks,
+                repeatInterval = repeatInterval,
+                isPinned = isPinned,
+                category = category
             )
             repository.insertTodoItem(item)
             if (item.dueDate != null && item.dueDate > System.currentTimeMillis()) {
@@ -170,8 +256,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), K
 
     fun done(item: TodoItem) {
         viewModelScope.launch {
-            repository.done(item)
+            val next = repository.done(item)
             reminderManager.cancelReminder(item.id)
+            if (next?.dueDate != null && next.dueDate > System.currentTimeMillis()) {
+                reminderManager.scheduleReminder(next)
+            }
         }
     }
 

@@ -15,7 +15,8 @@ object StatisticsCalculator {
         todos: List<TodoItem>,
         doneItems: List<DoneItem>,
         nowMs: Long = System.currentTimeMillis(),
-        zoneId: ZoneId = ZoneId.systemDefault()
+        zoneId: ZoneId = ZoneId.systemDefault(),
+        dailyGoal: Int = 3
     ): TaskStatistics {
         val totalActive = todos.size
         val totalDone = doneItems.size
@@ -88,6 +89,7 @@ object StatisticsCalculator {
             bestDayOfWeek = bestDayOfWeek,
             weeklyActivity = weeklyActivity,
             priorityBreakdown = priorityBreakdown,
+            dailyGoal = dailyGoal,
             motivationalTitle = title,
             motivationalMessage = message
         )

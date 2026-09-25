@@ -16,8 +16,8 @@ android {
         applicationId = "dev.mahdins.mtodo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26042005
-        versionName = "2.4.1"
+        versionCode = 26042006
+        versionName = "2.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

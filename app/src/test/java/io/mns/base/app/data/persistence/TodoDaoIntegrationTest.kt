@@ -65,4 +65,36 @@ class TodoDaoIntegrationTest {
             assertTrue(todos.isEmpty())
         }
     }
+
+    @Test
+    fun softDelete_movesTodoToTrash_and_restoreBringsItBack() = runTest {
+        val todo = TodoItem(id = "2", createdAt = 2000L, title = "Write Tests")
+        todoDao.insertTodo(todo)
+
+        todoDao.softDelete("2")
+
+        val activeList = todoDao.getAllTodosList()
+        assertTrue(activeList.none { it.id == "2" })
+
+        val trashedList = todoDao.getTrashedTodosList()
+        assertEquals(1, trashedList.size)
+        assertEquals("2", trashedList[0].id)
+
+        todoDao.restoreFromTrash("2")
+        val restoredActive = todoDao.getAllTodosList()
+        assertEquals(1, restoredActive.size)
+        assertEquals("2", restoredActive[0].id)
+    }
+
+    @Test
+    fun emptyTrash_removesSoftDeletedItems() = runTest {
+        val todo = TodoItem(id = "3", createdAt = 3000L, title = "Old Task")
+        todoDao.insertTodo(todo)
+        todoDao.softDelete("3")
+
+        todoDao.emptyTrash()
+
+        val trashedList = todoDao.getTrashedTodosList()
+        assertTrue(trashedList.isEmpty())
+    }
 }

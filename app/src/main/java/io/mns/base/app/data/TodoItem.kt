@@ -12,5 +12,9 @@ data class TodoItem(
     val dueDate: Long? = null,
     val priority: Priority = Priority.NONE,
     val tags: List<String> = emptyList(),
-    val subtasks: List<Subtask> = emptyList()
+    val subtasks: List<Subtask> = emptyList(),
+    val repeatInterval: RepeatInterval = RepeatInterval.NONE,
+    val isPinned: Boolean = false,
+    val category: String = "General",
+    val deletedAt: Long? = null
 )

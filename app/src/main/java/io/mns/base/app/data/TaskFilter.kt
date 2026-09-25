@@ -19,6 +19,11 @@ sealed interface TaskFilter {
         override val label: String = "#$tag"
     }
 
+    data class ByCategory(val category: String) : TaskFilter {
+        override val id: String = "cat_$category"
+        override val label: String = "📁 $category"
+    }
+
     object Overdue : TaskFilter {
         override val id: String = "overdue"
         override val label: String = "Overdue"

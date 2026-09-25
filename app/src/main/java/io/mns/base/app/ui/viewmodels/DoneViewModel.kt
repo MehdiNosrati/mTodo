@@ -37,18 +37,7 @@ class DoneViewModel(application: Application) : AndroidViewModel(application), K
 
     fun undoUncomplete(item: DoneItem) {
         viewModelScope.launch {
-            repository.deleteTodoItem(
-                TodoItem(
-                    id = item.id,
-                    createdAt = item.createdAt,
-                    title = item.title,
-                    description = item.description,
-                    dueDate = item.dueDate,
-                    priority = item.priority,
-                    tags = item.tags,
-                    subtasks = item.subtasks
-                )
-            )
+            repository.hardDeleteTodo(item.id)
             repository.restoreDoneItem(item)
         }
     }

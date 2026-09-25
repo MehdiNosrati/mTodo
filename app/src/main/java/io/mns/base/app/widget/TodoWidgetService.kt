@@ -49,7 +49,8 @@ class TodoWidgetFactory(private val context: Context) : RemoteViewsService.Remot
         val item = items[position]
 
         val views = RemoteViews(context.packageName, R.layout.widget_todo_item)
-        views.setTextViewText(R.id.widget_item_title, item.title)
+        val titleText = if (item.isPinned) "📌 ${item.title}" else item.title
+        views.setTextViewText(R.id.widget_item_title, titleText)
 
         // Priority color indicator
         val priorityColor = when (item.priority) {
@@ -60,8 +61,11 @@ class TodoWidgetFactory(private val context: Context) : RemoteViewsService.Remot
         }
         views.setInt(R.id.widget_item_priority, "setBackgroundColor", priorityColor)
 
-        // Subtitle (due date or tags)
+        // Subtitle (due date, category or tags)
         val subtitleParts = mutableListOf<String>()
+        if (item.category.isNotBlank() && item.category != "General") {
+            subtitleParts.add("📁 ${item.category}")
+        }
         if (item.dueDate != null) {
             val isOverdue = item.dueDate < System.currentTimeMillis()
             subtitleParts.add(if (isOverdue) "Overdue" else "Due")
@@ -81,11 +85,19 @@ class TodoWidgetFactory(private val context: Context) : RemoteViewsService.Remot
             views.setViewVisibility(R.id.widget_item_subtitle, View.GONE)
         }
 
-        // FillInIntent for item click
-        val fillInIntent = Intent().apply {
+        // FillInIntent for container click -> open details
+        val openFillInIntent = Intent().apply {
             putExtra(TodoWidgetProvider.EXTRA_TODO_ID, item.id)
+            putExtra(TodoWidgetProvider.EXTRA_IS_CHECK, false)
         }
-        views.setOnClickFillInIntent(R.id.widget_item_container, fillInIntent)
+        views.setOnClickFillInIntent(R.id.widget_item_container, openFillInIntent)
+
+        // FillInIntent for check button click -> complete task
+        val checkFillInIntent = Intent().apply {
+            putExtra(TodoWidgetProvider.EXTRA_TODO_ID, item.id)
+            putExtra(TodoWidgetProvider.EXTRA_IS_CHECK, true)
+        }
+        views.setOnClickFillInIntent(R.id.widget_btn_check, checkFillInIntent)
 
         return views
     }

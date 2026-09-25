@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import io.mns.base.app.data.DoneItem
 import io.mns.base.app.data.TodoItem
 
-@Database(version = 4, entities = [TodoItem::class, DoneItem::class], exportSchema = false)
+@Database(version = 5, entities = [TodoItem::class, DoneItem::class], exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class TodoDataBase : RoomDatabase() {
     abstract fun todoDao(): TodoDao
@@ -34,6 +34,20 @@ abstract class TodoDataBase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE todos ADD COLUMN subtasks TEXT NOT NULL DEFAULT '[]'")
                 db.execSQL("ALTER TABLE doneItems ADD COLUMN subtasks TEXT NOT NULL DEFAULT '[]'")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE todos ADD COLUMN repeatInterval TEXT NOT NULL DEFAULT 'NONE'")
+                db.execSQL("ALTER TABLE todos ADD COLUMN isPinned INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE todos ADD COLUMN category TEXT NOT NULL DEFAULT 'General'")
+                db.execSQL("ALTER TABLE todos ADD COLUMN deletedAt INTEGER DEFAULT NULL")
+
+                db.execSQL("ALTER TABLE doneItems ADD COLUMN repeatInterval TEXT NOT NULL DEFAULT 'NONE'")
+                db.execSQL("ALTER TABLE doneItems ADD COLUMN isPinned INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE doneItems ADD COLUMN category TEXT NOT NULL DEFAULT 'General'")
+                db.execSQL("ALTER TABLE doneItems ADD COLUMN deletedAt INTEGER DEFAULT NULL")
             }
         }
     }

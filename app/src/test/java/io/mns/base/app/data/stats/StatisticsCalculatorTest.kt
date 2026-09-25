@@ -128,4 +128,16 @@ class StatisticsCalculatorTest {
 
         assertEquals("Tuesday", stats.bestDayOfWeek)
     }
+
+    @Test
+    fun calculate_dailyGoal_calculatesTargetAndProgress() {
+        val done = listOf(
+            DoneItem("d1", nowMs, "T1"),
+            DoneItem("d2", nowMs, "T2")
+        )
+        val stats = StatisticsCalculator.calculate(emptyList(), done, nowMs, zoneId, dailyGoal = 4)
+        assertEquals(4, stats.dailyGoal)
+        assertEquals(2, stats.completedToday)
+        assertEquals(0.5f, stats.dailyGoalProgress, 0.01f)
+    }
 }

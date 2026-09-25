@@ -1,5 +1,10 @@
 package io.mns.base.app.ui.screens
 
+import android.app.Activity
+import android.content.Intent
+import android.speech.RecognizerIntent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -16,10 +21,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -29,9 +37,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -54,6 +69,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.mns.base.app.R
 import io.mns.base.app.data.Priority
+import io.mns.base.app.data.RepeatInterval
+import io.mns.base.app.data.SortOrder
+import io.mns.base.app.data.TaskFilter
 import io.mns.base.app.data.TodoItem
 import io.mns.base.app.data.TodoListSection
 import io.mns.base.app.ui.viewmodels.HomeViewModel
@@ -61,24 +79,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import io.mns.base.app.data.SortOrder
-import io.mns.base.app.data.TaskFilter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 private val Brand1 = Color(0xFF6366F1)
 private val Brand2 = Color(0xFFA78BFA)
+private val DoneGreen = Color(0xFF10B981)
 
 private fun brandBrush(
     start: Offset = Offset.Zero,
@@ -114,6 +121,8 @@ fun HomeScreen(
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val sortOrder by viewModel.sortOrder.collectAsState()
     val availableTags by viewModel.availableTags.collectAsState()
+    val availableCategories by viewModel.availableCategories.collectAsState()
+    val selectedTodoIds by viewModel.selectedTodoIds.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -124,12 +133,21 @@ fun HomeScreen(
         selectedFilter = selectedFilter,
         sortOrder = sortOrder,
         availableTags = availableTags,
+        availableCategories = availableCategories,
+        selectedTodoIds = selectedTodoIds,
         onSettingsClick = onSettingsClick,
         onItemClick = onItemClick,
         onExpandAdd = onExpandAdd,
         onSearchQueryChange = { viewModel.setSearchQuery(it) },
         onFilterChange = { viewModel.setFilter(it) },
         onSortOrderChange = { viewModel.setSortOrder(it) },
+        onToggleSelection = { viewModel.toggleSelection(it) },
+        onSelectAll = { viewModel.selectAll() },
+        onClearSelection = { viewModel.clearSelection() },
+        onBatchDone = { viewModel.batchDone() },
+        onBatchDelete = { viewModel.batchDelete() },
+        onBatchTogglePin = { viewModel.batchTogglePin() },
+        onTogglePin = { viewModel.togglePin(it) },
         onDone = { item ->
             viewModel.done(item)
             scope.launch {
@@ -147,7 +165,7 @@ fun HomeScreen(
             viewModel.deleteTodo(item)
             scope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = "Task deleted",
+                    message = "Task moved to Trash",
                     actionLabel = "Undo",
                     duration = SnackbarDuration.Short
                 )
@@ -169,12 +187,21 @@ fun HomeScreenContent(
     selectedFilter: TaskFilter = TaskFilter.All,
     sortOrder: SortOrder = SortOrder.CREATION_DATE_DESC,
     availableTags: List<String> = emptyList(),
+    availableCategories: List<String> = emptyList(),
+    selectedTodoIds: Set<String> = emptySet(),
     onSettingsClick: () -> Unit = {},
     onItemClick: (TodoItem) -> Unit = {},
     onExpandAdd: (draft: String) -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onFilterChange: (TaskFilter) -> Unit = {},
     onSortOrderChange: (SortOrder) -> Unit = {},
+    onToggleSelection: (String) -> Unit = {},
+    onSelectAll: () -> Unit = {},
+    onClearSelection: () -> Unit = {},
+    onBatchDone: () -> Unit = {},
+    onBatchDelete: () -> Unit = {},
+    onBatchTogglePin: () -> Unit = {},
+    onTogglePin: (TodoItem) -> Unit = {},
     onDone: (TodoItem) -> Unit = {},
     onDelete: (TodoItem) -> Unit = {},
     onAdd: (String) -> Unit = {},
@@ -187,6 +214,8 @@ fun HomeScreenContent(
     var fabVisible by remember { mutableStateOf(initialFabVisible) }
     var isSearchVisible by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
+
+    val isSelectionMode = selectedTodoIds.isNotEmpty()
 
     LaunchedEffect(Unit) { fabVisible = true }
 
@@ -203,72 +232,104 @@ fun HomeScreenContent(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.to_be_done),
-                        style = TextStyle(
-                            brush = brandBrush(),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+            if (isSelectionMode) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "${selectedTodoIds.size} selected",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.primary
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onClearSelection) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear selection")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onSelectAll) {
+                            Icon(Icons.Default.SelectAll, contentDescription = "Select All")
+                        }
+                        IconButton(onClick = onBatchTogglePin) {
+                            Icon(Icons.Default.PushPin, contentDescription = "Pin/Unpin")
+                        }
+                        IconButton(onClick = onBatchDone) {
+                            Icon(Icons.Default.Done, contentDescription = "Complete selected", tint = DoneGreen)
+                        }
+                        IconButton(onClick = onBatchDelete) {
+                            Icon(Icons.Default.DeleteOutline, contentDescription = "Delete selected", tint = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                )
+            } else {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.to_be_done),
+                            style = TextStyle(
+                                brush = brandBrush(),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = if (isSearchVisible || searchQuery.isNotEmpty()) Brand1 else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Box {
-                        IconButton(onClick = { showSortMenu = true }) {
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onSettingsClick) {
                             Icon(
-                                imageVector = Icons.Default.Sort,
-                                contentDescription = "Sort",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        DropdownMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false }
-                        ) {
-                            SortOrder.entries.forEach { order ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = order.label,
-                                            fontWeight = if (order == sortOrder) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (order == sortOrder) Brand1 else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        onSortOrderChange(order)
-                                        showSortMenu = false
-                                    }
+                    },
+                    actions = {
+                        IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = if (isSearchVisible || searchQuery.isNotEmpty()) Brand1 else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Box {
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Sort,
+                                    contentDescription = "Sort",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            DropdownMenu(
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false }
+                            ) {
+                                SortOrder.entries.forEach { order ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = order.label,
+                                                fontWeight = if (order == sortOrder) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (order == sortOrder) Brand1 else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            onSortOrderChange(order)
+                                            showSortMenu = false
+                                        }
+                                    )
+                                }
+                            }
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
+            }
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = fabVisible && !isAdding,
+                visible = fabVisible && !isAdding && !isSelectionMode,
                 enter = scaleIn(
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -318,7 +379,7 @@ fun HomeScreenContent(
                     )
                 }
 
-                // Filter Chips Carousel
+                // Filter & Category Chips Carousel
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -330,6 +391,19 @@ fun HomeScreenContent(
                             selected = selectedFilter is TaskFilter.All,
                             onClick = { onFilterChange(TaskFilter.All) },
                             label = { Text("All") },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                    }
+                    items(availableCategories) { cat ->
+                        val isCatSelected = selectedFilter is TaskFilter.ByCategory &&
+                            (selectedFilter as TaskFilter.ByCategory).category.equals(cat, ignoreCase = true)
+                        FilterChip(
+                            selected = isCatSelected,
+                            onClick = {
+                                if (isCatSelected) onFilterChange(TaskFilter.All)
+                                else onFilterChange(TaskFilter.ByCategory(cat))
+                            },
+                            label = { Text("📁 $cat") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -442,11 +516,23 @@ fun HomeScreenContent(
                                 }
                                 is TodoListSection.Item -> {
                                     item(key = section.todo.id) {
+                                        val isSelected = selectedTodoIds.contains(section.todo.id)
                                         SwipeableTodoItemRow(
                                             item = section.todo,
+                                            isSelectionMode = isSelectionMode,
+                                            isSelected = isSelected,
                                             onDone = { onDone(section.todo) },
                                             onDelete = { onDelete(section.todo) },
-                                            onClick = { onItemClick(section.todo) },
+                                            onClick = {
+                                                if (isSelectionMode) {
+                                                    onToggleSelection(section.todo.id)
+                                                } else {
+                                                    onItemClick(section.todo)
+                                                }
+                                            },
+                                            onLongClick = {
+                                                onToggleSelection(section.todo.id)
+                                            },
                                             modifier = Modifier
                                                 .padding(horizontal = 16.dp, vertical = 5.dp)
                                                 .animateItem(
@@ -467,8 +553,6 @@ fun HomeScreenContent(
         }
     }
 }
-
-
 
 @Composable
 private fun BackgroundOrbs() {
@@ -601,80 +685,102 @@ fun TimeSegmentHeader(label: String) {
 @Composable
 fun SwipeableTodoItemRow(
     item: TodoItem,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
     onDone: () -> Unit,
     onDelete: () -> Unit,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onDone()
-                    true
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDelete()
-                    true
-                }
-                SwipeToDismissBoxValue.Settled -> false
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            val direction = dismissState.dismissDirection
-            val color = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> Brand1.copy(alpha = 0.85f)
-                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
-                else -> Color.Transparent
-            }
-            val alignment = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
-                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
-                else -> Alignment.Center
-            }
-            val icon = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Done
-                SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
-                else -> null
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 2.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(color)
-                    .padding(horizontal = 24.dp),
-                contentAlignment = alignment
-            ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-        },
-        modifier = modifier
-    ) {
+    if (isSelectionMode) {
         TodoItemRow(
             item = item,
+            isSelectionMode = true,
+            isSelected = isSelected,
             onDone = onDone,
-            onClick = onClick
+            onClick = onClick,
+            onLongClick = onLongClick,
+            modifier = modifier
         )
+    } else {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = { value ->
+                when (value) {
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                        onDone()
+                        true
+                    }
+                    SwipeToDismissBoxValue.EndToStart -> {
+                        onDelete()
+                        true
+                    }
+                    SwipeToDismissBoxValue.Settled -> false
+                }
+            }
+        )
+
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                val direction = dismissState.dismissDirection
+                val color = when (direction) {
+                    SwipeToDismissBoxValue.StartToEnd -> Brand1.copy(alpha = 0.85f)
+                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                    else -> Color.Transparent
+                }
+                val alignment = when (direction) {
+                    SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                    else -> Alignment.Center
+                }
+                val icon = when (direction) {
+                    SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Done
+                    SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
+                    else -> null
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 2.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(color)
+                        .padding(horizontal = 24.dp),
+                    contentAlignment = alignment
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                }
+            },
+            modifier = modifier
+        ) {
+            TodoItemRow(
+                item = item,
+                isSelectionMode = false,
+                isSelected = false,
+                onDone = onDone,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+        }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodoItemRow(
     item: TodoItem,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
     onDone: () -> Unit,
     onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val btnInteraction = remember { MutableInteractionSource() }
@@ -722,15 +828,24 @@ fun TodoItemRow(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 4.dp,
+                elevation = if (isSelected) 6.dp else 4.dp,
                 shape = RoundedCornerShape(20.dp),
-                spotColor = Brand1.copy(alpha = 0.10f),
+                spotColor = if (isSelected) Brand1.copy(alpha = 0.35f) else Brand1.copy(alpha = 0.10f),
                 ambientColor = Brand1.copy(alpha = 0.05f)
             )
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
+            .background(
+                if (isSelected) Brand1.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
+            )
+            .border(
+                width = if (isSelected) 1.5.dp else 1.dp,
+                color = if (isSelected) Brand1 else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -751,18 +866,60 @@ fun TodoItemRow(
                     .weight(1f)
                     .padding(start = 14.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
             ) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty() || item.subtasks.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (item.isPinned) {
+                        Text(
+                            text = "📌",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 12.sp
+                        )
+                    }
+                    Text(
+                        text = item.title,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = if (item.isPinned) FontWeight.Bold else FontWeight.Medium
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty() ||
+                    item.subtasks.isNotEmpty() || (item.category.isNotBlank() && item.category != "General") ||
+                    item.repeatInterval != RepeatInterval.NONE
+                ) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (item.category.isNotBlank() && item.category != "General") {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Brand2.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = item.category,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    ),
+                                    color = Brand2,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
+                        if (item.repeatInterval != RepeatInterval.NONE) {
+                            Icon(
+                                imageVector = Icons.Default.Repeat,
+                                contentDescription = item.repeatInterval.label,
+                                tint = Brand1,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                         if (item.priority != Priority.NONE) {
                             Box(
                                 modifier = Modifier
@@ -776,7 +933,7 @@ fun TodoItemRow(
                             )
                         }
                         if (item.dueDate != null) {
-                            val (dueText, isOverdue) = formatDueDate(item.dueDate!!)
+                            val (dueText, isOverdue) = formatDueDate(item.dueDate)
                             Text(
                                 text = dueText,
                                 style = MaterialTheme.typography.labelSmall.copy(
@@ -826,44 +983,57 @@ fun TodoItemRow(
                     }
                 }
             }
-            Box(
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .graphicsLayer { scaleX = btnScale; scaleY = btnScale }
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .border(width = 1.5.dp, brush = brandBrush(), shape = CircleShape)
-                    .clickable(
-                        interactionSource = btnInteraction,
-                        indication = ripple(bounded = true),
-                        enabled = !checked,
-                        onClick = { checked = true }
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                // Gradient fill that scales in
+
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick() },
+                    modifier = Modifier.padding(end = 8.dp),
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Brand1,
+                        checkmarkColor = Color.White
+                    )
+                )
+            } else {
                 Box(
                     modifier = Modifier
+                        .padding(end = 16.dp)
+                        .graphicsLayer { scaleX = btnScale; scaleY = btnScale }
                         .size(30.dp)
-                        .graphicsLayer { scaleX = fillScale; scaleY = fillScale }
                         .clip(CircleShape)
-                        .background(brandBrush())
-                )
-                // Checkmark fades in on top
-                Icon(
-                    imageVector = Icons.Default.Done,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = checkAlpha),
-                    modifier = Modifier.size(16.dp)
-                )
-                // Empty dot shown when unchecked
-                if (!checked) {
+                        .border(width = 1.5.dp, brush = brandBrush(), shape = CircleShape)
+                        .clickable(
+                            interactionSource = btnInteraction,
+                            indication = ripple(bounded = true),
+                            enabled = !checked,
+                            onClick = { checked = true }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Gradient fill that scales in
                     Box(
                         modifier = Modifier
-                            .size(9.dp)
+                            .size(30.dp)
+                            .graphicsLayer { scaleX = fillScale; scaleY = fillScale }
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.outlineVariant)
+                            .background(brandBrush())
                     )
+                    // Checkmark fades in on top
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = checkAlpha),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    // Empty dot shown when unchecked
+                    if (!checked) {
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.outlineVariant)
+                        )
+                    }
                 }
             }
         }
@@ -918,95 +1088,6 @@ private fun EmptyState(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AddTodoDialog(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
-
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-        AddTodoDialogCard(
-            text = text,
-            onTextChange = { text = it },
-            onDismiss = onDismiss,
-            onAdd = onAdd
-        )
-    }
-}
-
-@Composable
-fun AddTodoDialogCard(
-    text: String,
-    onTextChange: (String) -> Unit,
-    onDismiss: () -> Unit,
-    onAdd: (String) -> Unit
-) {
-    val enabled = text.isNotBlank()
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "New Todo",
-                style = TextStyle(
-                    brush = brandBrush(),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("What needs to be done?") },
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Brand1,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                ),
-                singleLine = true
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (enabled) brandBrush()
-                            else Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.outlineVariant,
-                                    MaterialTheme.colorScheme.outlineVariant
-                                )
-                            )
-                        )
-                        .clickable(
-                            enabled = enabled,
-                            onClick = { onAdd(text) }
-                        )
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = "Add",
-                        color = if (enabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun InlineAddTodoCard(
     draftText: String,
     onDraftChange: (String) -> Unit,
@@ -1018,6 +1099,19 @@ fun InlineAddTodoCard(
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+
+    val speechLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val matches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spoken = matches?.firstOrNull()?.trim()
+            if (!spoken.isNullOrBlank()) {
+                val updated = if (draftText.isBlank()) spoken else "$draftText $spoken"
+                onDraftChange(updated)
+            }
+        }
     }
 
     Box(
@@ -1036,7 +1130,7 @@ fun InlineAddTodoCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 0.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+                .padding(start = 0.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -1045,7 +1139,7 @@ fun InlineAddTodoCard(
                     .height(54.dp)
                     .background(brandBrush(), RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             BasicTextField(
                 value = draftText,
                 onValueChange = onDraftChange,
@@ -1071,10 +1165,36 @@ fun InlineAddTodoCard(
                 }
             )
 
+            // Voice input button
+            IconButton(
+                onClick = {
+                    try {
+                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(
+                                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                            )
+                            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak task...")
+                        }
+                        speechLauncher.launch(intent)
+                    } catch (e: Exception) {
+                        // Speech recognition unavailable on device
+                    }
+                },
+                modifier = Modifier.size(34.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = "Voice input",
+                    tint = Brand1,
+                    modifier = Modifier.size(19.dp)
+                )
+            }
+
             // Expand to full details button
             IconButton(
                 onClick = onExpand,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(34.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.OpenInFull,
@@ -1089,7 +1209,7 @@ fun InlineAddTodoCard(
                 onClick = onSubmit,
                 enabled = draftText.isNotBlank(),
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(34.dp)
                     .clip(CircleShape)
                     .background(if (draftText.isNotBlank()) Brand1 else Color.Transparent)
             ) {
@@ -1104,7 +1224,7 @@ fun InlineAddTodoCard(
             // Cancel button
             IconButton(
                 onClick = onCancel,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(30.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
@@ -1116,4 +1236,3 @@ fun InlineAddTodoCard(
         }
     }
 }
-

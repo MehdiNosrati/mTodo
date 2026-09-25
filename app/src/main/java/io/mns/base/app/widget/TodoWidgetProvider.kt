@@ -10,13 +10,25 @@ import android.net.Uri
 import android.os.Build
 import android.widget.RemoteViews
 import io.mns.base.app.R
+import io.mns.base.app.data.TodoRepository
+import io.mns.base.app.notifications.ReminderManager
 import io.mns.base.app.ui.MainActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class TodoWidgetProvider : AppWidgetProvider() {
+class TodoWidgetProvider : AppWidgetProvider(), KoinComponent {
+
+    private val repository: TodoRepository by inject()
+    private val reminderManager: ReminderManager by inject()
 
     companion object {
         const val EXTRA_START_ADD = "extra_start_add"
         const val EXTRA_TODO_ID = "extra_todo_id"
+        const val EXTRA_IS_CHECK = "extra_is_check"
+        const val ACTION_WIDGET_ITEM_CLICK = "io.mns.base.app.ACTION_WIDGET_ITEM_CLICK"
 
         fun updateAllWidgets(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -31,6 +43,37 @@ class TodoWidgetProvider : AppWidgetProvider() {
                 context.sendBroadcast(intent)
             }
         }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_WIDGET_ITEM_CLICK) {
+            val todoId = intent.getStringExtra(EXTRA_TODO_ID)
+            val isCheck = intent.getBooleanExtra(EXTRA_IS_CHECK, false)
+            if (todoId != null) {
+                if (isCheck) {
+                    val pendingResult = goAsync()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val item = repository.getTodoById(todoId)
+                            if (item != null) {
+                                repository.done(item)
+                                reminderManager.cancelReminder(todoId)
+                            }
+                        } finally {
+                            pendingResult.finish()
+                        }
+                    }
+                } else {
+                    val openIntent = Intent(context, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra(EXTRA_TODO_ID, todoId)
+                    }
+                    context.startActivity(openIntent)
+                }
+                return
+            }
+        }
+        super.onReceive(context, intent)
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -54,11 +97,11 @@ class TodoWidgetProvider : AppWidgetProvider() {
             views.setRemoteAdapter(R.id.widget_list_view, serviceIntent)
             views.setEmptyView(R.id.widget_list_view, R.id.widget_empty_view)
 
-            // Setup Item Click Template
-            val clickIntent = Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            // Setup Item Click Template with Broadcast to handle both details and interactive check
+            val clickIntent = Intent(context, TodoWidgetProvider::class.java).apply {
+                action = ACTION_WIDGET_ITEM_CLICK
             }
-            val clickPendingIntent = PendingIntent.getActivity(
+            val clickPendingIntent = PendingIntent.getBroadcast(
                 context,
                 102,
                 clickIntent,

@@ -26,6 +26,7 @@ data class TaskStatistics(
     val bestDayOfWeek: String = "None",
     val weeklyActivity: List<DayActivity> = emptyList(),
     val priorityBreakdown: List<PriorityStat> = emptyList(),
+    val dailyGoal: Int = 3,
     val motivationalTitle: String = "Stay Focused",
     val motivationalMessage: String = "Complete your tasks to build momentum and achieve your goals."
 ) {
@@ -34,4 +35,10 @@ data class TaskStatistics(
 
     val isEmpty: Boolean
         get() = totalTasks == 0
+
+    val dailyGoalProgress: Float
+        get() = if (dailyGoal > 0) (completedToday.toFloat() / dailyGoal).coerceIn(0f, 1f) else 0f
+
+    val isDailyGoalReached: Boolean
+        get() = completedToday >= dailyGoal
 }

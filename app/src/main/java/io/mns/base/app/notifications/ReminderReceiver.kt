@@ -19,6 +19,7 @@ import org.koin.core.component.inject
 class ReminderReceiver : BroadcastReceiver(), KoinComponent {
 
     private val repository: TodoRepository by inject()
+    private val reminderManager: ReminderManager by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
@@ -36,6 +37,30 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     }
                 }
             }
+            ReminderManager.ACTION_SNOOZE_15M -> {
+                notificationManager.cancel(todoId.hashCode())
+                CoroutineScope(Dispatchers.IO).launch {
+                    val item = repository.getTodoById(todoId)
+                    if (item != null) {
+                        val newDue = System.currentTimeMillis() + 15 * 60 * 1000L
+                        val updated = item.copy(dueDate = newDue)
+                        repository.updateTodoItem(updated)
+                        reminderManager.scheduleReminder(updated)
+                    }
+                }
+            }
+            ReminderManager.ACTION_SNOOZE_1H -> {
+                notificationManager.cancel(todoId.hashCode())
+                CoroutineScope(Dispatchers.IO).launch {
+                    val item = repository.getTodoById(todoId)
+                    if (item != null) {
+                        val newDue = System.currentTimeMillis() + 60 * 60 * 1000L
+                        val updated = item.copy(dueDate = newDue)
+                        repository.updateTodoItem(updated)
+                        reminderManager.scheduleReminder(updated)
+                    }
+                }
+            }
             ReminderManager.ACTION_REMINDER -> {
                 val title = intent.getStringExtra(ReminderManager.EXTRA_TITLE) ?: "Task Reminder"
                 val description = intent.getStringExtra(ReminderManager.EXTRA_DESCRIPTION).orEmpty()
@@ -50,6 +75,7 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
                 )
 
+                // Mark Done Action
                 val doneIntent = Intent(context, ReminderReceiver::class.java).apply {
                     this.action = ReminderManager.ACTION_MARK_DONE
                     putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
@@ -61,6 +87,30 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
                 )
 
+                // Snooze 15m Action
+                val snooze15Intent = Intent(context, ReminderReceiver::class.java).apply {
+                    this.action = ReminderManager.ACTION_SNOOZE_15M
+                    putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
+                }
+                val snooze15PendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    todoId.hashCode() + 2,
+                    snooze15Intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+                )
+
+                // Snooze 1h Action
+                val snooze1hIntent = Intent(context, ReminderReceiver::class.java).apply {
+                    this.action = ReminderManager.ACTION_SNOOZE_1H
+                    putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
+                }
+                val snooze1hPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    todoId.hashCode() + 3,
+                    snooze1hIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+                )
+
                 val notification = NotificationCompat.Builder(context, ReminderManager.CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle(title)
@@ -68,7 +118,9 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
                     .setContentIntent(openPendingIntent)
-                    .addAction(R.drawable.ic_launcher_foreground, "Mark Done", donePendingIntent)
+                    .addAction(R.drawable.ic_launcher_foreground, "Done", donePendingIntent)
+                    .addAction(R.drawable.ic_launcher_foreground, "+15m", snooze15PendingIntent)
+                    .addAction(R.drawable.ic_launcher_foreground, "+1h", snooze1hPendingIntent)
                     .build()
 
                 notificationManager.notify(todoId.hashCode(), notification)
