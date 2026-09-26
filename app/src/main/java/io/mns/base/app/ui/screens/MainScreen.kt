@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
@@ -421,14 +422,14 @@ fun ToolboxSideAnchorButton(
         tonalElevation = 6.dp,
         modifier = modifier
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 6.dp, top = 10.dp, bottom = 10.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.22f)),
                 contentAlignment = Alignment.Center
@@ -437,25 +438,31 @@ fun ToolboxSideAnchorButton(
                     imageVector = Icons.Default.Build,
                     contentDescription = "Toolbox",
                     tint = Color.White,
-                    modifier = Modifier.size(17.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
-            Column {
+            Text(
+                text = "T\nO\nO\nL\nS",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Black,
+                    fontSize = 10.sp,
+                    lineHeight = 12.sp,
+                    textAlign = TextAlign.Center
+                ),
+                color = Color.White
+            )
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = Color.White.copy(alpha = 0.22f)
+            ) {
                 Text(
-                    text = "TOOLBOX",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.8.sp
-                    ),
-                    color = Color.White
-                )
-                Text(
-                    text = "100 Super Tools",
+                    text = "100",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
                     ),
-                    color = Color.White.copy(alpha = 0.85f)
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
         }

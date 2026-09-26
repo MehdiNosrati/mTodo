@@ -398,15 +398,7 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.HIGH,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.HIGH)) },
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Priority.HIGH.color)
-                                )
-                            },
-                            label = { Text("High") },
+                            label = { Text("🔴 High") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -414,15 +406,7 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.MEDIUM,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.MEDIUM)) },
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Priority.MEDIUM.color)
-                                )
-                            },
-                            label = { Text("Med") },
+                            label = { Text("🟠 Med") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -430,15 +414,7 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.LOW,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.LOW)) },
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Priority.LOW.color)
-                                )
-                            },
-                            label = { Text("Low") },
+                            label = { Text("🟢 Low") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -446,15 +422,7 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.Overdue,
                             onClick = { onFilterChange(TaskFilter.Overdue) },
-                            leadingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.error)
-                                )
-                            },
-                            label = { Text("Overdue") },
+                            label = { Text("⚠️ Overdue") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
