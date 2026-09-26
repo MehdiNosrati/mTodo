@@ -32,10 +32,10 @@ object KoinModules {
 
         single { BackupManager(get()) }
 
-        viewModel { HomeViewModel(get(), get(), get()) }
-        viewModel { DoneViewModel(get(), get()) }
-        viewModel { SettingViewModel(get(), get(), get(), get(), get()) }
-        viewModel { InsightsViewModel(get(), get(), get()) }
-        viewModel { TodoDetailViewModel(get(), get(), get()) }
+        viewModel { HomeViewModel(get(), get()) }
+        viewModel { DoneViewModel(get()) }
+        viewModel { SettingViewModel(get(), get(), get(), get()) }
+        viewModel { InsightsViewModel(get(), get()) }
+        viewModel { TodoDetailViewModel(get(), get()) }
     }
 }
