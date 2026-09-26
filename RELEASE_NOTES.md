@@ -1,23 +1,28 @@
-## What's Changed in mTodo v2.5.0
+## What's Changed in mTodo v3.0.0
 
-### 🔔 Notifications & Exact Alarms
-- **Android 13+ & 16 Compatibility**: Added runtime permission requester for `POST_NOTIFICATIONS` and compliant exact alarm scheduling via `SCHEDULE_EXACT_ALARM`.
-- **Google Play Compliance**: Removed `USE_EXACT_ALARM` to comply with Google Play's policy for task management apps.
-- **Actionable Notification Actions**: Added interactive notification buttons in the tray: `[✓ Done]`, `[⏰ +15m]`, and `[⏰ +1h]`.
-- **Notification Status Card**: Added a live status banner in Settings showing whether notifications are active or permission is needed.
+### 🚀 100 Functional Offline Utilities Super App
+mTodo has evolved into an all-in-one **Utilities Super App** with **100 functional, interactive tools** organized across 5 core domains:
+- **Math & Finance (Tools 1–20)**: Everyday Calculator, Percentage Calculator, Tip & Bill Splitter, Discount & Sales Tax, Loan EMI, Compound Interest, Fuel Cost Planner, Unit Converters (Length, Weight, Temp, Area, Volume, Speed, Storage), Base Converter, Roman Numerals, Prime Factorizer & GCD/LCM, Quadratic Solver, Aspect Ratio Scaler, Profit Margin & Markup.
+- **Text & Code Utilities (Tools 21–40)**: Text Statistics Analyzer, Case Converter, Base64 Encoder/Decoder, URL Encoder/Decoder, Cryptographic Hashes (MD5, SHA-1, SHA-256, SHA-512), Morse Code, ROT13/Caesar Cipher, Text Reverser, Binary/Hex Encoder, Lorem Ipsum Generator, Line Deduplicator & Sorter, URL Slugifier, Character Frequency, Palindrome Checker, UUID v4 Generator, JSON Formatter/Minifier, Password Entropy Meter, Whitespace Cleaner, Markdown Preview.
+- **Time, Calendar & Productivity (Tools 41–60)**: Millisecond Stopwatch, Countdown Multi-Timer, Interval HIIT Timer, Date Difference, Age & Birthday Countdown, Unix Epoch Converter, World Clock Explorer, Event Countdown, Leap Year Checker, Work Hours & Overtime, Tap BPM Metronome, Sleep Cycle Calculator, Pomodoro Focus Manager, Week/Day of Year, Meeting Overlap Finder, Daylight & Solar Calculator, Moon Phase Calculator, Julian Date, Year/Day Progress, Running Pace Calculator.
+- **Hardware & System Diagnostics (Tools 61–80)**: Screen Color Lantern, Flashlight LED Torch, Battery Health & Telemetry, Display Metrics Inspector, RAM & Memory Gauge, Device & OS Specs, Haptic Vibration Studio, Dead Pixel Screen Tester, Device Uptime, Storage Space Inspector, Display Refresh Rate, Network Connection Monitor, 440Hz Audio Pitch Pipe, Thermal Status, Clipboard Inspector, Screen Caliper, Bubble Level, Hardware Sensors Inventory, Audio Volume Streams, Theme Palette Inspector.
+- **Everyday, Health & Decision Tools (Tools 81–100)**: Coin Flipper, Polyhedral Dice Roller, Random Number Generator, Secure Password Generator, QR Code Matrix Generator, Barcode Code-128 Generator, Decision Wheel Picker, Rock Paper Scissors, Tally Counter, BMI Calculator, BMR & Calorie Calculator, Daily Water Intake, Box Breathing Relaxation, WCAG Contrast Checker, Quick Scratchpad, Atbash Cipher, Playing Card Deck & Hand Draw, Magic 8-Ball, Habit Streak Tracker, Name Compatibility Matcher.
 
-### ⚡ Productivity & Interaction
-- **Interactive Home Screen Widget**: Check off tasks directly from your home screen launcher without opening the app.
-- **Recurring / Repeating Tasks**: Automatic recurrence scheduling (`Daily`, `Weekdays`, `Weekly`, `Monthly`) with auto-resetting checklist subtasks.
-- **Voice-to-Text Input**: Speech recognition microphone button in the top bar for hands-free task creation.
-- **Category System**: Organize tasks by category (`Personal`, `Work`, `Shopping`, `Health`, `Finance`, `Ideas`) with filter chips and badges.
-- **Pinned Tasks**: Anchor urgent tasks to the top of the list.
-- **Batch Multi-Select Mode**: Long-press any task to enter contextual selection mode to bulk complete or delete tasks in one tap.
-- **30-Day Recycle Bin**: Non-destructive soft deletion with individual restore actions and automated 30-day purge.
-- **Daily Goal Tracker & Streak Ring**: Set custom daily completion targets (1–10 tasks/day) and track your streak and progress ring in Insights.
-- **Focus Mode (Pomodoro Timer)**: Built-in 25-minute Pomodoro timer in the task detail screen.
+### 🛠 Sleek Vertical Edge-Anchored Toolbox Tab
+- Added a vertical rectangular tab (`Column` layout, ~38dp wide by ~125dp tall) anchored flush to the right edge of the screen (`Alignment.CenterEnd`).
+- Provides 1-tap navigation directly into the Super Toolbox without obscuring list content or action buttons.
 
-### 🛡 Performance & Architecture
-- **Room Database v5**: Seamless migration (`MIGRATION_4_5`) with zero data loss.
-- **Testing**: 64 automated unit, integration, and Roborazzi screenshot tests passing.
-- **Lightweight**: APK footprint strictly under 6 MB with zero external cloud dependencies.
+### 🎯 Prominent Priority Filters Intact
+- Core priority filters (`🔴 High`, `🟠 Med`, `🟢 Low`, `⚠️ Overdue`) remain prominent and distinct across task views.
+- Removed cluttered category filters and sections for a cleaner, distraction-free task management experience.
+
+### 📊 Clean, Professional Insights
+- Completely emoji-free statistics and insights dashboard styled with elegant Material 3 vector iconography and clear typography.
+
+### 🛡 Stability & Hardware Hardening
+- Added defensive exception handling across all hardware sensors, audio synthesis, camera flashlight, and system broadcast receivers.
+- Zero network required: 100% offline-first, private, and secure.
+
+### 📦 Store Readiness
+- Release bundle (`app-release.aab`) built with R8 minification, startup baseline profiles, and native symbol tables.
+- Target SDK 36 (Android 15) and min SDK 24.
