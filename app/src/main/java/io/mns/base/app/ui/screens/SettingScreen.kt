@@ -95,7 +95,6 @@ fun SettingScreen(
     onBack: () -> Unit,
     onToggleTheme: () -> Unit,
     onDebugClick: (() -> Unit)? = null,
-    onFeaturesClick: (() -> Unit)? = null,
     onToolboxClick: (() -> Unit)? = null,
     viewModel: SettingViewModel = koinViewModel()
 ) {
@@ -203,7 +202,6 @@ fun SettingScreen(
             restoreLauncher.launch(arrayOf("application/json", "*/*"))
         },
         onDebugClick = onDebugClick,
-        onFeaturesClick = onFeaturesClick,
         onToolboxClick = onToolboxClick,
         snackbarHostState = snackbarHostState
     )
@@ -232,7 +230,6 @@ fun SettingScreenContent(
     onExportClick: () -> Unit = {},
     onRestoreClick: () -> Unit = {},
     onDebugClick: (() -> Unit)? = null,
-    onFeaturesClick: (() -> Unit)? = null,
     onToolboxClick: (() -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     animate: Boolean = true
@@ -721,29 +718,6 @@ fun SettingScreenContent(
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Text("Open Hub", fontSize = 12.sp)
-                            }
-                        }
-                    }
-                    if (onFeaturesClick != null) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                        SettingsRow(
-                            icon = Icons.Default.AutoAwesome,
-                            iconBrush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF6366F1), Color(0xFFA78BFA)),
-                                start = Offset.Zero,
-                                end = Offset.Infinite
-                            ),
-                            title = "Super App Capabilities",
-                            subtitle = "Explore all 100 active powerhouse features"
-                        ) {
-                            FilledTonalButton(
-                                onClick = onFeaturesClick,
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text("Explore", fontSize = 12.sp)
                             }
                         }
                     }
