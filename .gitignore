@@ -17,3 +17,11 @@ local.properties
 .idea
 .claude
 app/release/
+
+# Xcode & KMP iOS
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+DerivedData/
+build/
+

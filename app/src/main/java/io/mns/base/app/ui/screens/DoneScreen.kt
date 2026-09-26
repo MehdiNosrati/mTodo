@@ -61,7 +61,7 @@ fun DoneScreen(
     onItemClick: (DoneItem) -> Unit = {},
     viewModel: DoneViewModel = koinViewModel()
 ) {
-    val items by viewModel.loadItems().observeAsState(initial = emptyList())
+    val items by viewModel.doneItems.collectAsState()
     DoneScreenContent(
         items = items,
         onSettingsClick = onSettingsClick,

@@ -1,16 +1,15 @@
 package io.mns.base.app.data.persistence
 
 import android.content.Context
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import io.mns.base.app.data.TodoItem
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -19,9 +18,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class TodoDaoIntegrationTest {
-
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var database: TodoDataBase
     private lateinit var todoDao: TodoDao
@@ -45,12 +41,10 @@ class TodoDaoIntegrationTest {
         val todo = TodoItem(id = "1", createdAt = 1000L, title = "Buy Milk")
         todoDao.insertTodo(todo)
 
-        val liveData = todoDao.getTodos()
-        liveData.observeForever { todos ->
-            assertEquals(1, todos.size)
-            assertEquals("Buy Milk", todos[0].title)
-            assertEquals("1", todos[0].id)
-        }
+        val todos = todoDao.getTodos().first()
+        assertEquals(1, todos.size)
+        assertEquals("Buy Milk", todos[0].title)
+        assertEquals("1", todos[0].id)
     }
 
     @Test
@@ -60,10 +54,8 @@ class TodoDaoIntegrationTest {
 
         todoDao.done(todo)
 
-        val liveData = todoDao.getTodos()
-        liveData.observeForever { todos ->
-            assertTrue(todos.isEmpty())
-        }
+        val todos = todoDao.getTodos().first()
+        assertTrue(todos.isEmpty())
     }
 
     @Test
@@ -71,7 +63,7 @@ class TodoDaoIntegrationTest {
         val todo = TodoItem(id = "2", createdAt = 2000L, title = "Write Tests")
         todoDao.insertTodo(todo)
 
-        todoDao.softDelete("2")
+        todoDao.softDelete("2", 3000L)
 
         val activeList = todoDao.getAllTodosList()
         assertTrue(activeList.none { it.id == "2" })
@@ -90,7 +82,7 @@ class TodoDaoIntegrationTest {
     fun emptyTrash_removesSoftDeletedItems() = runTest {
         val todo = TodoItem(id = "3", createdAt = 3000L, title = "Old Task")
         todoDao.insertTodo(todo)
-        todoDao.softDelete("3")
+        todoDao.softDelete("3", 4000L)
 
         todoDao.emptyTrash()
 

@@ -3,7 +3,6 @@ package io.mns.base.app.ui.screenshot
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.lifecycle.MutableLiveData
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -118,10 +117,13 @@ class ComposeScreenshotsTest {
         val repository = mockk<TodoRepository>(relaxed = true)
         val reminderManager = mockk<io.mns.base.app.notifications.ReminderManager>(relaxed = true)
         val backupManager = mockk<io.mns.base.app.data.backup.BackupManager>(relaxed = true)
-        val todosLiveData = androidx.lifecycle.MutableLiveData<List<TodoItem>>(sampleTodos)
-        val doneLiveData = androidx.lifecycle.MutableLiveData<List<DoneItem>>(sampleDoneItems)
-        every { repository.loadTodoItems() } returns todosLiveData
-        every { repository.loadDoneItems() } returns doneLiveData
+        val settings = mockk<io.mns.base.app.data.settings.AppSettings>(relaxed = true)
+        val todosFlow = kotlinx.coroutines.flow.MutableStateFlow<List<TodoItem>>(sampleTodos)
+        val doneFlow = kotlinx.coroutines.flow.MutableStateFlow<List<DoneItem>>(sampleDoneItems)
+        every { repository.loadTodoItems() } returns todosFlow
+        every { repository.loadDoneItems() } returns doneFlow
+        every { settings.getDailyGoal() } returns 3
+        every { settings.getSortOrder() } returns io.mns.base.app.data.SortOrder.CREATION_DATE_DESC
 
         startKoin {
             modules(
@@ -129,11 +131,12 @@ class ComposeScreenshotsTest {
                     single { repository }
                     single { reminderManager }
                     single { backupManager }
-                    viewModel { HomeViewModel(ApplicationProvider.getApplicationContext()) }
-                    viewModel { DoneViewModel(ApplicationProvider.getApplicationContext()) }
-                    viewModel { SettingViewModel(ApplicationProvider.getApplicationContext()) }
-                    viewModel { InsightsViewModel(ApplicationProvider.getApplicationContext()) }
-                    viewModel { io.mns.base.app.ui.viewmodels.TodoDetailViewModel(ApplicationProvider.getApplicationContext()) }
+                    single { settings }
+                    viewModel { HomeViewModel(repository = get(), reminderManager = get()) }
+                    viewModel { DoneViewModel(repository = get()) }
+                    viewModel { SettingViewModel(repository = get(), reminderManager = get(), backupManager = get(), settings = get()) }
+                    viewModel { InsightsViewModel(repository = get(), settings = get()) }
+                    viewModel { io.mns.base.app.ui.viewmodels.TodoDetailViewModel(repository = get(), reminderManager = get()) }
                 }
             )
         }

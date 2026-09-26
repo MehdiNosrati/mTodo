@@ -62,7 +62,7 @@ fun InsightsScreen(
     onSettingsClick: () -> Unit,
     viewModel: InsightsViewModel = koinViewModel()
 ) {
-    val statistics by viewModel.statistics.observeAsState(initial = TaskStatistics())
+    val statistics by viewModel.statistics.collectAsState()
     InsightsScreenContent(
         statistics = statistics,
         onSettingsClick = onSettingsClick

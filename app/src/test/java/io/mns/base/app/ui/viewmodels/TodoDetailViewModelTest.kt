@@ -28,7 +28,6 @@ class TodoDetailViewModelTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val testDispatcher = StandardTestDispatcher()
-    private val application: Application = mockk(relaxed = true)
     private val repository: TodoRepository = mockk(relaxed = true)
     private val reminderManager: ReminderManager = mockk(relaxed = true)
 
@@ -48,7 +47,7 @@ class TodoDetailViewModelTest {
                 }
             )
         }
-        viewModel = TodoDetailViewModel(application)
+        viewModel = TodoDetailViewModel(repository, reminderManager)
     }
 
     @After

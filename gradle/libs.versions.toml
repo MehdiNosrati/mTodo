@@ -9,9 +9,14 @@ appcompat = "1.7.0"
 material = "1.12.0"
 smoothBottomBar = "1.7.7"
 multidex = "2.0.1"
-room = "2.6.1"
+room = "2.7.0-alpha11"
+sqlite = "2.5.0-alpha11"
+composeMultiplatform = "1.7.3"
+kotlinxDatetime = "0.6.1"
+kotlinxSerialization = "1.7.3"
 navigation = "2.8.3"
 lifecycle = "2.8.7"
+jetbrainsLifecycle = "2.8.2"
 koin = "4.0.0"
 animCheckbox = "1.0.1"
 databindingCommon = "8.7.2"
@@ -48,6 +53,15 @@ lifecycle-compiler = { group = "androidx.lifecycle", name = "lifecycle-common", 
 koin = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }
+sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "sqlite" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-compose-multiplatform = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "jetbrainsLifecycle" }
+lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
 anim-checkbox = { group = "com.github.lguipeng", name = "AnimCheckBox", version.ref = "animCheckbox" }
 androidx-databinding-common = { group = "androidx.databinding", name = "databinding-common", version.ref = "databindingCommon" }
 
@@ -65,6 +79,7 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 
 # Testing
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
@@ -81,5 +96,9 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 navigation-safe-args = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+room = { id = "androidx.room", version.ref = "room" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 

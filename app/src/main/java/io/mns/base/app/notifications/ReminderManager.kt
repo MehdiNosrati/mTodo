@@ -9,7 +9,7 @@ import android.content.Intent
 import android.os.Build
 import io.mns.base.app.data.TodoItem
 
-class ReminderManager(private val context: Context) {
+class AndroidReminderManager(private val context: Context) : ReminderManager {
 
     companion object {
         const val CHANNEL_ID = "channel_todo_reminders"
@@ -44,12 +44,12 @@ class ReminderManager(private val context: Context) {
         }
     }
 
-    fun areNotificationsEnabled(): Boolean {
+    override fun areNotificationsEnabled(): Boolean {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return false
         return notificationManager.areNotificationsEnabled()
     }
 
-    fun scheduleReminder(item: TodoItem) {
+    override fun scheduleReminder(item: TodoItem) {
         val dueTime = item.dueDate ?: return
         if (dueTime <= System.currentTimeMillis()) return
 
@@ -77,7 +77,7 @@ class ReminderManager(private val context: Context) {
         }
     }
 
-    fun cancelReminder(todoId: String) {
+    override fun cancelReminder(todoId: String) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         val pendingIntent = createReminderPendingIntent(todoId, "", "")
         alarmManager.cancel(pendingIntent)
