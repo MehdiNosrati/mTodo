@@ -392,5 +392,25 @@ class ComposeScreenshotsTest {
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/todo_detail_readonly.png")
     }
+
+    @Test
+    fun testToolboxScreen() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                ToolboxScreen(onBack = {})
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/toolbox_screen.png")
+    }
+
+    @Test
+    fun testDebugScreen() {
+        composeTestRule.setContent {
+            MTodoTheme(darkTheme = false) {
+                DebugScreen(onBack = {})
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/debug_screen.png")
+    }
 }
 
