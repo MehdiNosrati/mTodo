@@ -379,7 +379,7 @@ fun HomeScreenContent(
                     )
                 }
 
-                // Filter & Category Chips Carousel
+                // Filter Chips Carousel
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -394,24 +394,19 @@ fun HomeScreenContent(
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
-                    items(availableCategories) { cat ->
-                        val isCatSelected = selectedFilter is TaskFilter.ByCategory &&
-                            (selectedFilter as TaskFilter.ByCategory).category.equals(cat, ignoreCase = true)
-                        FilterChip(
-                            selected = isCatSelected,
-                            onClick = {
-                                if (isCatSelected) onFilterChange(TaskFilter.All)
-                                else onFilterChange(TaskFilter.ByCategory(cat))
-                            },
-                            label = { Text("📁 $cat") },
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                    }
                     item {
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.HIGH,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.HIGH)) },
-                            label = { Text("🔴 High") },
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Priority.HIGH.color)
+                                )
+                            },
+                            label = { Text("High") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -419,7 +414,15 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.MEDIUM,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.MEDIUM)) },
-                            label = { Text("🟠 Med") },
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Priority.MEDIUM.color)
+                                )
+                            },
+                            label = { Text("Med") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -427,7 +430,15 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.ByPriority && (selectedFilter as TaskFilter.ByPriority).priority == Priority.LOW,
                             onClick = { onFilterChange(TaskFilter.ByPriority(Priority.LOW)) },
-                            label = { Text("🟢 Low") },
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Priority.LOW.color)
+                                )
+                            },
+                            label = { Text("Low") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -435,7 +446,15 @@ fun HomeScreenContent(
                         FilterChip(
                             selected = selectedFilter is TaskFilter.Overdue,
                             onClick = { onFilterChange(TaskFilter.Overdue) },
-                            label = { Text("⚠️ Overdue") },
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.error)
+                                )
+                            },
+                            label = { Text("Overdue") },
                             shape = RoundedCornerShape(12.dp)
                         )
                     }
@@ -888,30 +907,13 @@ fun TodoItemRow(
                 }
 
                 if (item.dueDate != null || item.priority != Priority.NONE || item.tags.isNotEmpty() ||
-                    item.subtasks.isNotEmpty() || (item.category.isNotBlank() && item.category != "General") ||
-                    item.repeatInterval != RepeatInterval.NONE
+                    item.subtasks.isNotEmpty() || item.repeatInterval != RepeatInterval.NONE
                 ) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (item.category.isNotBlank() && item.category != "General") {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Brand2.copy(alpha = 0.12f)
-                            ) {
-                                Text(
-                                    text = item.category,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    ),
-                                    color = Brand2,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                                )
-                            }
-                        }
                         if (item.repeatInterval != RepeatInterval.NONE) {
                             Icon(
                                 imageVector = Icons.Default.Repeat,

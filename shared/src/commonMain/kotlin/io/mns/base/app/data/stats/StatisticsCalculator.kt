@@ -130,20 +130,20 @@ object StatisticsCalculator {
     ): Pair<String, String> {
         return when {
             totalActive == 0 && totalDone > 0 -> {
-                "All Caught Up! 🎉" to "Incredible job! You have completed every task on your list."
+                "All Caught Up!" to "Incredible job! You have completed every task on your list."
             }
             currentStreakDays >= 3 -> {
-                "On Fire! 🔥" to "You are on a $currentStreakDays-day streak! Keep up the amazing consistency."
+                "On Fire!" to "You are on a $currentStreakDays-day streak! Keep up the amazing consistency."
             }
             completedToday > 0 -> {
                 val taskWord = if (completedToday == 1) "task" else "tasks"
-                "Great Momentum! ⚡" to "You completed $completedToday $taskWord today. Keep pushing forward!"
+                "Great Momentum!" to "You completed $completedToday $taskWord today. Keep pushing forward!"
             }
             completionRate >= 50f -> {
-                "Making Progress! 📈" to "You have completed ${completionRate.toInt()}% of your tasks. Keep up the good work!"
+                "Making Progress!" to "You have completed ${completionRate.toInt()}% of your tasks. Keep up the good work!"
             }
             else -> {
-                "Stay Focused! 🎯" to "Small steps lead to big accomplishments. Pick one task and finish it today!"
+                "Stay Focused!" to "Small steps lead to big accomplishments. Pick one task and finish it today!"
             }
         }
     }

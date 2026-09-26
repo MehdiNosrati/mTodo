@@ -149,7 +149,7 @@ fun SharedSettingScreen(
                     SettingsRow(
                         icon = Icons.Default.Info,
                         title = "mTodo",
-                        subtitle = "Version 2.5.0 · Kotlin Multiplatform",
+                        subtitle = "Version 3.0.0 · Kotlin Multiplatform",
                         trailing = {}
                     )
                     SettingsRow(

@@ -698,7 +698,7 @@ fun SettingScreenContent(
                             start = Offset.Zero,
                             end = Offset.Infinite
                         ),
-                        title = "mTodo v2.5.0",
+                        title = "mTodo v3.0.0",
                         subtitle = "Offline-first, private & distraction-free"
                     ) {}
                     if (onToolboxClick != null) {
@@ -822,13 +822,6 @@ private fun TrashedItemRow(
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isDone) Color(0xFF10B981) else MaterialTheme.colorScheme.primary
                 )
-                if (category.isNotBlank() && category != "General") {
-                    Text(
-                        text = "• $category",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
 

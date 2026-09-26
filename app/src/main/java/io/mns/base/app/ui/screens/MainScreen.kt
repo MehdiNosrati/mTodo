@@ -1,5 +1,6 @@
 package io.mns.base.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -8,8 +9,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -21,13 +22,17 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -129,10 +134,15 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = innerPadding.calculateBottomPadding())
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                modifier = Modifier.fillMaxSize(),
             enterTransition = {
                 val from = tabIndex(initialState.destination.route)
                 val to = tabIndex(targetState.destination.route)
@@ -370,6 +380,82 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
                     mode = mode,
                     draftTitle = draftTitle,
                     onBack = { navController.popBackStack() }
+                )
+            }
+        }
+
+        // Prominent anchored rectangle button on the side of pages
+        val isSideButtonVisible = currentRoute in listOf(
+            Screen.Home.route,
+            Screen.Done.route,
+            Screen.Insights.route,
+            Screen.Settings.route
+        )
+
+        AnimatedVisibility(
+            visible = isSideButtonVisible,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .offset(y = (-40).dp),
+            enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+            exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
+        ) {
+            ToolboxSideAnchorButton(
+                onClick = { navController.navigate(Screen.Toolbox.route) }
+            )
+        }
+    }
+}
+}
+
+@Composable
+fun ToolboxSideAnchorButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp, topEnd = 0.dp, bottomEnd = 0.dp),
+        color = Color(0xFF6366F1),
+        shadowElevation = 8.dp,
+        tonalElevation = 6.dp,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Build,
+                    contentDescription = "Toolbox",
+                    tint = Color.White,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+            Column {
+                Text(
+                    text = "TOOLBOX",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.8.sp
+                    ),
+                    color = Color.White
+                )
+                Text(
+                    text = "100 Super Tools",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = Color.White.copy(alpha = 0.85f)
                 )
             }
         }

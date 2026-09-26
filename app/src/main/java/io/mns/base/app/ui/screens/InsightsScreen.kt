@@ -773,7 +773,7 @@ private fun DailyGoalRingCard(statistics: TaskStatistics, animate: Boolean) {
                             color = OrangeBrand.copy(alpha = 0.15f)
                         ) {
                             Text(
-                                text = "🔥 ${statistics.currentStreakDays}d streak",
+                                text = "${statistics.currentStreakDays}d streak",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = OrangeBrand,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -787,7 +787,7 @@ private fun DailyGoalRingCard(statistics: TaskStatistics, animate: Boolean) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = if (statistics.isDailyGoalReached) "Target achieved! Great work! 🎉" else "Keep going to reach today's target!",
+                    text = if (statistics.isDailyGoalReached) "Target achieved! Great work!" else "Keep going to reach today's target!",
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = if (statistics.isDailyGoalReached) GreenBrand else Brand1
                 )

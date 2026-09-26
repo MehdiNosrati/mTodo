@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.mns.base.app.ui.tools.ALL_100_TOOLS
-import io.mns.base.app.ui.tools.ToolCategory
 import io.mns.base.app.ui.tools.ToolItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,18 +34,15 @@ fun ToolboxScreen(
     onBack: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<ToolCategory?>(null) }
     var activeTool by remember { mutableStateOf<ToolItem?>(null) }
     val favoriteIds = remember { mutableStateListOf<Int>() }
 
-    val filteredTools = remember(searchQuery, selectedCategory) {
+    val filteredTools = remember(searchQuery) {
         ALL_100_TOOLS.filter { tool ->
-            val matchesCategory = selectedCategory == null || tool.category == selectedCategory
-            val matchesSearch = searchQuery.isBlank() ||
-                    tool.name.contains(searchQuery, ignoreCase = true) ||
-                    tool.description.contains(searchQuery, ignoreCase = true) ||
-                    tool.id.toString() == searchQuery.trim()
-            matchesCategory && matchesSearch
+            searchQuery.isBlank() ||
+                tool.name.contains(searchQuery, ignoreCase = true) ||
+                tool.description.contains(searchQuery, ignoreCase = true) ||
+                tool.id.toString() == searchQuery.trim()
         }
     }
 
@@ -116,41 +112,6 @@ fun ToolboxScreen(
                 singleLine = true
             )
 
-            // Category Chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = selectedCategory == null,
-                    onClick = { selectedCategory = null },
-                    label = { Text("All (100)") }
-                )
-                ToolCategory.values().forEach { category ->
-                    val count = ALL_100_TOOLS.count { it.category == category }
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = {
-                            selectedCategory = if (selectedCategory == category) null else category
-                        },
-                        label = { Text("${category.title} ($count)") },
-                        leadingIcon = {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(category.primaryColor)
-                            )
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
             // Tool List
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -208,14 +169,7 @@ fun ToolboxScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(
-                                        tool.category.primaryColor.copy(alpha = 0.15f),
-                                        MaterialTheme.colorScheme.surface
-                                    )
-                                )
-                            )
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -228,13 +182,13 @@ fun ToolboxScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(tool.category.primaryColor),
+                                    .background(MaterialTheme.colorScheme.primary),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     tool.icon,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -245,9 +199,10 @@ fun ToolboxScreen(
                                     fontSize = 17.sp
                                 )
                                 Text(
-                                    text = tool.category.title,
+                                    text = tool.description,
                                     fontSize = 12.sp,
-                                    color = tool.category.primaryColor
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -300,13 +255,13 @@ fun ToolCardItem(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(tool.category.primaryColor.copy(alpha = 0.15f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     tool.icon,
                     contentDescription = null,
-                    tint = tool.category.primaryColor,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }

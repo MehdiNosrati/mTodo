@@ -236,7 +236,7 @@ class ComposeScreenshotsTest {
                 io.mns.base.app.data.stats.PriorityStat(io.mns.base.app.data.Priority.MEDIUM, activeCount = 1, doneCount = 4),
                 io.mns.base.app.data.stats.PriorityStat(io.mns.base.app.data.Priority.LOW, activeCount = 1, doneCount = 1)
             ),
-            motivationalTitle = "On Fire! 🔥",
+            motivationalTitle = "On Fire!",
             motivationalMessage = "You are on a 4-day streak! Keep up the amazing consistency."
         )
         composeTestRule.setContent {

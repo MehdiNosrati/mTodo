@@ -473,54 +473,7 @@ fun TodoDetailScreenContent(
                 }
             }
 
-            // Category / Project Space Section
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = CardDefaults.outlinedCardBorder()
-            ) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Folder,
-                            contentDescription = null,
-                            tint = Brand1,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "Category",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
 
-                    if (isReadOnly) {
-                        Text(
-                            text = "📁 $category",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                            color = Brand1
-                        )
-                    } else {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            DEFAULT_CATEGORIES.forEach { cat ->
-                                val selected = category.equals(cat, ignoreCase = true)
-                                FilterChip(
-                                    selected = selected,
-                                    onClick = { category = cat },
-                                    label = { Text("📁 $cat") },
-                                    shape = RoundedCornerShape(10.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
 
             // Priority Section
             Card(

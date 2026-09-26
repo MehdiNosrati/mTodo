@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,21 +108,21 @@ fun SharedInsightsScreen(
                     MetricCard(
                         title = "Streak",
                         value = "${stats.currentStreakDays} days",
-                        icon = "🔥",
+                        icon = Icons.Default.DateRange,
                         color = OrangeBrand,
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
                         title = "Completion",
                         value = "${stats.completionRate.toInt()}%",
-                        icon = "📈",
+                        icon = Icons.AutoMirrored.Filled.TrendingUp,
                         color = GreenBrand,
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
                         title = "Today",
                         value = "${stats.completedToday}/${stats.dailyGoal}",
-                        icon = "🎯",
+                        icon = Icons.Default.CheckCircle,
                         color = Brand1,
                         modifier = Modifier.weight(1f)
                     )
@@ -255,7 +258,7 @@ fun SharedInsightsScreen(
 private fun MetricCard(
     title: String,
     value: String,
-    icon: String,
+    icon: ImageVector,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -266,8 +269,21 @@ private fun MetricCard(
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            Text(icon, fontSize = 20.sp)
-            Spacer(modifier = Modifier.height(6.dp))
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
