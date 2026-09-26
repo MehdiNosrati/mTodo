@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -44,6 +45,7 @@ sealed class Screen(
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object Debug : Screen("debug", "Debug", Icons.Default.BugReport)
     object SuperFeatures : Screen("super_features", "Superpowers", Icons.Default.AutoAwesome)
+    object Toolbox : Screen("toolbox", "Toolbox", Icons.Default.Build)
 }
 
 private val NavBrand1 = Color(0xFF6366F1)
@@ -221,7 +223,8 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
                     onDebugClick = if (BuildConfig.DEBUG) {
                         { navController.navigate(Screen.Debug.route) }
                     } else null,
-                    onFeaturesClick = { navController.navigate(Screen.SuperFeatures.route) }
+                    onFeaturesClick = { navController.navigate(Screen.SuperFeatures.route) },
+                    onToolboxClick = { navController.navigate(Screen.Toolbox.route) }
                 )
             }
             composable(
@@ -251,7 +254,39 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
                     )
                 }
             ) {
-                SuperAppFeaturesScreen(onBack = { navController.popBackStack() })
+                SuperAppFeaturesScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenToolbox = { navController.navigate(Screen.Toolbox.route) }
+                )
+            }
+            composable(
+                route = Screen.Toolbox.route,
+                enterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                exitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                },
+                popEnterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                popExitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                }
+            ) {
+                ToolboxScreen(onBack = { navController.popBackStack() })
             }
             if (BuildConfig.DEBUG) {
                 composable(

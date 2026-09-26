@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -173,7 +174,8 @@ val ALL_100_SUPER_FEATURES: List<SuperFeature> = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuperAppFeaturesScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenToolbox: (() -> Unit)? = null
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedPillar by remember { mutableStateOf<FeaturePillar?>(null) }
@@ -235,6 +237,47 @@ fun SuperAppFeaturesScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            if (onOpenToolbox != null) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onOpenToolbox),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "⚡ 100 Interactive Tools Suite",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    "Calculators, converters, text & hardware tools",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                )
+                            }
+                            FilledTonalButton(
+                                onClick = onOpenToolbox,
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Launch", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 // Search Bar

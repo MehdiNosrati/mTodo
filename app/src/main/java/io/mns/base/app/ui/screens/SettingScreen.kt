@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDownload
@@ -95,6 +96,7 @@ fun SettingScreen(
     onToggleTheme: () -> Unit,
     onDebugClick: (() -> Unit)? = null,
     onFeaturesClick: (() -> Unit)? = null,
+    onToolboxClick: (() -> Unit)? = null,
     viewModel: SettingViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
@@ -202,6 +204,7 @@ fun SettingScreen(
         },
         onDebugClick = onDebugClick,
         onFeaturesClick = onFeaturesClick,
+        onToolboxClick = onToolboxClick,
         snackbarHostState = snackbarHostState
     )
 }
@@ -230,6 +233,7 @@ fun SettingScreenContent(
     onRestoreClick: () -> Unit = {},
     onDebugClick: (() -> Unit)? = null,
     onFeaturesClick: (() -> Unit)? = null,
+    onToolboxClick: (() -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     animate: Boolean = true
 ) {
@@ -697,6 +701,29 @@ fun SettingScreenContent(
                         title = "mTodo v2.5.0",
                         subtitle = "Offline-first, private & distraction-free"
                     ) {}
+                    if (onToolboxClick != null) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        SettingsRow(
+                            icon = Icons.Default.Build,
+                            iconBrush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF10B981), Color(0xFF06B6D4)),
+                                start = Offset.Zero,
+                                end = Offset.Infinite
+                            ),
+                            title = "100 Super Utilities Toolbox",
+                            subtitle = "Calculators, text tools, converters & 100 live utilities"
+                        ) {
+                            FilledTonalButton(
+                                onClick = onToolboxClick,
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Open Hub", fontSize = 12.sp)
+                            }
+                        }
+                    }
                     if (onFeaturesClick != null) {
                         HorizontalDivider(
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
