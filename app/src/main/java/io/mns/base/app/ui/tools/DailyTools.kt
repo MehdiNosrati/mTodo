@@ -845,9 +845,11 @@ fun ScratchpadTool() {
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = {
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("Scratchpad", notes))
-                Toast.makeText(context, "Copied notes", Toast.LENGTH_SHORT).show()
+                try {
+                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    cm?.setPrimaryClip(ClipData.newPlainText("Scratchpad", notes))
+                    Toast.makeText(context, "Copied notes", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {}
             }) {
                 Text("Copy All")
             }

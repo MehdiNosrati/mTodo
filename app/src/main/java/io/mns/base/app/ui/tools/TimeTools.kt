@@ -556,12 +556,20 @@ fun UnixEpochTool() {
 
     val customEpoch = customEpochText.toLongOrNull() ?: currentEpoch
     val formattedUtc = remember(customEpoch) {
-        val instant = Instant.ofEpochMilli(customEpoch)
-        DateTimeFormatter.ISO_INSTANT.format(instant)
+        try {
+            val instant = Instant.ofEpochMilli(customEpoch)
+            DateTimeFormatter.ISO_INSTANT.format(instant)
+        } catch (_: Exception) {
+            "Invalid Epoch Millis"
+        }
     }
     val formattedLocal = remember(customEpoch) {
-        val d = Date(customEpoch)
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.getDefault()).format(d)
+        try {
+            val d = Date(customEpoch)
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.getDefault()).format(d)
+        } catch (_: Exception) {
+            "Invalid Epoch Millis"
+        }
     }
 
     Column(
@@ -959,10 +967,10 @@ fun DaylightSolarTool() {
     var latText by remember { mutableStateOf("51.5") } // London
     val lat = latText.toDoubleOrNull() ?: 51.5
     val day = LocalDate.now().dayOfYear
-    // Approximate solar declination
     val declination = 23.45 * sin(Math.toRadians((360.0 / 365.0) * (day - 81)))
-    val hourAngle = Math.toDegrees(acos(-tan(Math.toRadians(lat)) * tan(Math.toRadians(declination))))
-    val dayLengthHours = (2.0 * hourAngle) / 15.0
+    val term = (-tan(Math.toRadians(lat)) * tan(Math.toRadians(declination))).coerceIn(-1.0, 1.0)
+    val hourAngle = if (term.isNaN()) 90.0 else Math.toDegrees(acos(term))
+    val dayLengthHours = if (hourAngle.isNaN()) 12.0 else (2.0 * hourAngle) / 15.0
 
     Column(
         modifier = Modifier

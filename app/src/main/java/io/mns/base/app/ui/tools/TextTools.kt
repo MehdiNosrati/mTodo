@@ -310,9 +310,11 @@ fun CaseConverterTool() {
                         Text(value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)
                     }
                     IconButton(onClick = {
-                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        cm.setPrimaryClip(ClipData.newPlainText(label, value))
-                        Toast.makeText(context, "Copied $label", Toast.LENGTH_SHORT).show()
+                        try {
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                            cm?.setPrimaryClip(ClipData.newPlainText(label, value))
+                            Toast.makeText(context, "Copied $label", Toast.LENGTH_SHORT).show()
+                        } catch (_: Exception) {}
                     }) {
                         Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
                     }
@@ -1065,9 +1067,11 @@ fun ResultWithCopy(label: String, value: String, context: Context) {
                 )
             }
             IconButton(onClick = {
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText(label, value))
-                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                try {
+                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    cm?.setPrimaryClip(ClipData.newPlainText(label, value))
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {}
             }) {
                 Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
             }

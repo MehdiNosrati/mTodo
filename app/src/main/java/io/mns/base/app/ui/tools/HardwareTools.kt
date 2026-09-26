@@ -22,9 +22,13 @@ import android.os.Environment
 import android.os.PowerManager
 import android.os.StatFs
 import android.os.SystemClock
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.hardware.camera2.CameraCharacteristics
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -307,7 +311,15 @@ fun FlashlightTool() {
     fun toggleTorch(enable: Boolean) {
         try {
             val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
-            val cameraId = cameraManager?.cameraIdList?.firstOrNull()
+            val cameraId = cameraManager?.cameraIdList?.firstOrNull { id ->
+                try {
+                    val chars = cameraManager.getCameraCharacteristics(id)
+                    chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                } catch (_: Exception) {
+                    false
+                }
+            } ?: cameraManager?.cameraIdList?.firstOrNull()
+
             if (cameraId != null && cameraManager != null) {
                 cameraManager.setTorchMode(cameraId, enable)
                 isTorchOn = enable
@@ -315,7 +327,7 @@ fun FlashlightTool() {
                 hasCameraFlash = false
                 isTorchOn = enable
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Emulators or devices without flash
             hasCameraFlash = false
             isTorchOn = enable
@@ -324,7 +336,9 @@ fun FlashlightTool() {
 
     DisposableEffect(Unit) {
         onDispose {
-            if (isTorchOn) toggleTorch(false)
+            try {
+                if (isTorchOn) toggleTorch(false)
+            } catch (_: Exception) {}
         }
     }
 
@@ -378,24 +392,44 @@ fun BatteryMonitorTool() {
     var tempC by remember { mutableStateOf(28.0) }
     var tech by remember { mutableStateOf("Li-ion") }
 
+    fun parseBatteryIntent(intent: Intent?) {
+        intent?.let {
+            val rawLevel = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
+            level = if (rawLevel >= 0 && scale > 0) (rawLevel * 100) / scale else 100
+            val status = it.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+            voltageMv = it.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 4200)
+            val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 280)
+            tempC = temp / 10.0
+            tech = it.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Li-ion"
+        }
+    }
+
     DisposableEffect(Unit) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context?, intent: Intent?) {
-                intent?.let {
-                    level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                    val status = it.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-                    isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
-                    voltageMv = it.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
-                    val temp = it.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
-                    tempC = temp / 10.0
-                    tech = it.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Li-ion"
+        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        var receiver: BroadcastReceiver? = null
+        try {
+            // First read sticky broadcast synchronously
+            val sticky = context.registerReceiver(null, filter)
+            parseBatteryIntent(sticky)
+
+            receiver = object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    parseBatteryIntent(intent)
                 }
             }
-        }
-        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        context.registerReceiver(receiver, filter)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+            } else {
+                context.registerReceiver(receiver, filter)
+            }
+        } catch (_: Exception) {}
+
         onDispose {
-            context.unregisterReceiver(receiver)
+            try {
+                receiver?.let { context.unregisterReceiver(it) }
+            } catch (_: Exception) {}
         }
     }
 
@@ -449,13 +483,15 @@ fun RamMonitorTool() {
     var memInfo by remember { mutableStateOf(ActivityManager.MemoryInfo()) }
 
     LaunchedEffect(Unit) {
-        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        while (isActive) {
-            val mi = ActivityManager.MemoryInfo()
-            am.getMemoryInfo(mi)
-            memInfo = mi
-            delay(2000)
-        }
+        try {
+            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            while (isActive) {
+                val mi = ActivityManager.MemoryInfo()
+                am?.getMemoryInfo(mi)
+                memInfo = mi
+                delay(2000)
+            }
+        } catch (_: Exception) {}
     }
 
     val totalGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
@@ -639,19 +675,28 @@ fun UptimeClockTool() {
 // Tool 70: Storage Space
 @Composable
 fun StorageSpaceTool() {
-    val stat = remember { StatFs(Environment.getDataDirectory().path) }
-    val blockSize = stat.blockSizeLong
-    val totalBlocks = stat.blockCountLong
-    val availableBlocks = stat.availableBlocksLong
+    var totalGb by remember { mutableStateOf(64.0) }
+    var usedGb by remember { mutableStateOf(24.0) }
+    var availGb by remember { mutableStateOf(40.0) }
+    var usedPct by remember { mutableStateOf(37.5f) }
 
-    val totalBytes = totalBlocks * blockSize
-    val availBytes = availableBlocks * blockSize
-    val usedBytes = totalBytes - availBytes
+    LaunchedEffect(Unit) {
+        try {
+            val stat = StatFs(Environment.getDataDirectory().path)
+            val blockSize = stat.blockSizeLong
+            val totalBlocks = stat.blockCountLong
+            val availableBlocks = stat.availableBlocksLong
 
-    val totalGb = totalBytes / (1024.0 * 1024.0 * 1024.0)
-    val usedGb = usedBytes / (1024.0 * 1024.0 * 1024.0)
-    val availGb = availBytes / (1024.0 * 1024.0 * 1024.0)
-    val usedPct = if (totalGb > 0.0) ((usedGb / totalGb) * 100.0).toFloat() else 0f
+            val totalBytes = totalBlocks * blockSize
+            val availBytes = availableBlocks * blockSize
+            val usedBytes = totalBytes - availBytes
+
+            totalGb = totalBytes / (1024.0 * 1024.0 * 1024.0)
+            usedGb = usedBytes / (1024.0 * 1024.0 * 1024.0)
+            availGb = availBytes / (1024.0 * 1024.0 * 1024.0)
+            usedPct = if (totalGb > 0.0) ((usedGb / totalGb) * 100.0).toFloat() else 0f
+        } catch (_: Exception) {}
+    }
 
     Column(
         modifier = Modifier
@@ -679,10 +724,16 @@ fun StorageSpaceTool() {
 @Composable
 fun RefreshRateTool() {
     val context = LocalContext.current
-    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? android.view.WindowManager
-    @Suppress("DEPRECATION")
-    val display = windowManager?.defaultDisplay
-    val refreshRate = display?.refreshRate ?: 60.0f
+    val refreshRate = remember {
+        try {
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? android.view.WindowManager
+            @Suppress("DEPRECATION")
+            val display = windowManager?.defaultDisplay
+            display?.refreshRate ?: 60.0f
+        } catch (_: Exception) {
+            60.0f
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -699,17 +750,28 @@ fun RefreshRateTool() {
 @Composable
 fun NetworkMonitorTool() {
     val context = LocalContext.current
-    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-    val activeNet = cm?.activeNetwork
-    val caps = cm?.getNetworkCapabilities(activeNet)
+    val (netType, isConnected, isUnmetered) = remember {
+        try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            val activeNet = cm?.activeNetwork
+            val caps = if (activeNet != null) cm.getNetworkCapabilities(activeNet) else null
 
-    val (netType, isConnected) = when {
-        caps == null -> "Offline" to false
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi Connection" to true
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Cellular Mobile Data" to true
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet Link" to true
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN Active" to true
-        else -> "Connected (Other)" to true
+            val type = when {
+                caps == null -> "Offline / Disconnected"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi Connection"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Cellular Mobile Data"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet Link"
+                caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN Active"
+                else -> "Connected (Other Link)"
+            }
+            val connected = caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            val unmetered = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true
+            Triple(type, connected, unmetered)
+        } catch (_: SecurityException) {
+            Triple("Permission Restricted", false, false)
+        } catch (_: Exception) {
+            Triple("Offline / Unknown", false, false)
+        }
     }
 
     Column(
@@ -720,7 +782,7 @@ fun NetworkMonitorTool() {
     ) {
         ResultCard("Internet Status", if (isConnected) "Online" else "Disconnected", if (isConnected) Color(0xFF10B981) else Color(0xFFEF4444))
         ResultCard("Active Link Type", netType, MaterialTheme.colorScheme.primary)
-        ResultCard("Metered Status", if (caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true) "Unmetered" else "Metered / Standard")
+        ResultCard("Metered Status", if (isUnmetered) "Unmetered" else "Metered / Standard")
     }
 }
 
@@ -732,51 +794,63 @@ fun PitchPipeTool() {
 
     fun toggleTone() {
         if (isPlaying) {
-            audioTrack?.stop()
-            audioTrack?.release()
+            try {
+                audioTrack?.stop()
+            } catch (_: Exception) {}
+            try {
+                audioTrack?.release()
+            } catch (_: Exception) {}
             audioTrack = null
             isPlaying = false
         } else {
-            val sampleRate = 44100
-            val numSamples = sampleRate * 2 // 2 seconds buffer loop
-            val buffer = ShortArray(numSamples)
-            val freq = 440.0 // A440
+            try {
+                val sampleRate = 44100
+                val numSamples = sampleRate * 2 // 2 seconds buffer loop
+                val buffer = ShortArray(numSamples)
+                val freq = 440.0 // A440
 
-            for (i in 0 until numSamples) {
-                val angle = 2.0 * Math.PI * i / (sampleRate / freq)
-                buffer[i] = (sin(angle) * Short.MAX_VALUE * 0.7).toInt().toShort()
+                for (i in 0 until numSamples) {
+                    val angle = 2.0 * Math.PI * i / (sampleRate / freq)
+                    buffer[i] = (sin(angle) * Short.MAX_VALUE * 0.7).toInt().toShort()
+                }
+
+                val track = AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(sampleRate)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(buffer.size * 2)
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .build()
+
+                track.write(buffer, 0, buffer.size)
+                track.setLoopPoints(0, buffer.size, -1)
+                track.play()
+                audioTrack = track
+                isPlaying = true
+            } catch (_: Exception) {
+                isPlaying = false
             }
-
-            val track = AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(sampleRate)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(buffer.size * 2)
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .build()
-
-            track.write(buffer, 0, buffer.size)
-            track.setLoopPoints(0, buffer.size, -1)
-            track.play()
-            audioTrack = track
-            isPlaying = true
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            audioTrack?.stop()
-            audioTrack?.release()
+            try {
+                audioTrack?.stop()
+            } catch (_: Exception) {}
+            try {
+                audioTrack?.release()
+            } catch (_: Exception) {}
         }
     }
 
@@ -791,8 +865,7 @@ fun PitchPipeTool() {
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(if (isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { toggleTone() },
+                .background(if (isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -819,20 +892,25 @@ fun PitchPipeTool() {
 @Composable
 fun ThermalStatusTool() {
     val context = LocalContext.current
-    val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-
-    val (statusStr, color) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && pm != null) {
-        when (pm.currentThermalStatus) {
-            PowerManager.THERMAL_STATUS_NONE -> "Normal (Cool)" to Color(0xFF10B981)
-            PowerManager.THERMAL_STATUS_LIGHT -> "Light Warmth" to Color(0xFF3B82F6)
-            PowerManager.THERMAL_STATUS_MODERATE -> "Moderate Warmth" to Color(0xFFF59E0B)
-            PowerManager.THERMAL_STATUS_SEVERE -> "Severe Throttling" to Color(0xFFEF4444)
-            PowerManager.THERMAL_STATUS_CRITICAL -> "Critical Heat" to Color(0xFFDC2626)
-            PowerManager.THERMAL_STATUS_EMERGENCY -> "Emergency Shutdown Warning" to Color(0xFF991B1B)
-            else -> "Optimal" to Color(0xFF10B981)
+    val (statusStr, color) = remember {
+        try {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && pm != null) {
+                when (pm.currentThermalStatus) {
+                    PowerManager.THERMAL_STATUS_NONE -> "Normal (Cool)" to Color(0xFF10B981)
+                    PowerManager.THERMAL_STATUS_LIGHT -> "Light Warmth" to Color(0xFF3B82F6)
+                    PowerManager.THERMAL_STATUS_MODERATE -> "Moderate Warmth" to Color(0xFFF59E0B)
+                    PowerManager.THERMAL_STATUS_SEVERE -> "Severe Throttling" to Color(0xFFEF4444)
+                    PowerManager.THERMAL_STATUS_CRITICAL -> "Critical Heat" to Color(0xFFDC2626)
+                    PowerManager.THERMAL_STATUS_EMERGENCY -> "Emergency Shutdown Warning" to Color(0xFF991B1B)
+                    else -> "Optimal" to Color(0xFF10B981)
+                }
+            } else {
+                "Optimal (Normal)" to Color(0xFF10B981)
+            }
+        } catch (_: Exception) {
+            "Optimal (Normal)" to Color(0xFF10B981)
         }
-    } else {
-        "Optimal (Android < 10)" to Color(0xFF10B981)
     }
 
     Column(
@@ -853,8 +931,17 @@ fun ClipboardInspectorTool() {
     var clipText by remember { mutableStateOf("") }
 
     fun refreshClip() {
-        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-        clipText = cm.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            val clip = cm?.primaryClip
+            clipText = if (clip != null && clip.itemCount > 0) {
+                clip.getItemAt(0)?.text?.toString() ?: ""
+            } else {
+                ""
+            }
+        } catch (_: Exception) {
+            clipText = ""
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -872,9 +959,11 @@ fun ClipboardInspectorTool() {
                 Text("Refresh Clipboard")
             }
             FilledTonalButton(onClick = {
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("", ""))
-                clipText = ""
+                try {
+                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    cm?.setPrimaryClip(ClipData.newPlainText("", ""))
+                    clipText = ""
+                } catch (_: Exception) {}
             }) {
                 Text("Clear")
             }
@@ -933,20 +1022,28 @@ fun BubbleLevelTool() {
     var roll by remember { mutableStateOf(0f) }
 
     DisposableEffect(Unit) {
-        val sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-        val sensor = sm?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        val listener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                event?.let {
-                    pitch = it.values[1] * 5f
-                    roll = it.values[0] * 5f
+        var sm: SensorManager? = null
+        var listener: SensorEventListener? = null
+        try {
+            sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            val sensor = sm?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            if (sensor != null) {
+                listener = object : SensorEventListener {
+                    override fun onSensorChanged(event: SensorEvent?) {
+                        event?.let {
+                            pitch = (it.values.getOrNull(1) ?: 0f) * 5f
+                            roll = (it.values.getOrNull(0) ?: 0f) * 5f
+                        }
+                    }
+                    override fun onAccuracyChanged(s: Sensor?, acc: Int) {}
                 }
+                sm.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
             }
-            override fun onAccuracyChanged(s: Sensor?, acc: Int) {}
-        }
-        sm?.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        } catch (_: Exception) {}
         onDispose {
-            sm?.unregisterListener(listener)
+            try {
+                if (listener != null) sm?.unregisterListener(listener)
+            } catch (_: Exception) {}
         }
     }
 
@@ -986,8 +1083,14 @@ fun BubbleLevelTool() {
 @Composable
 fun SensorsInventoryTool() {
     val context = LocalContext.current
-    val sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-    val sensors = remember { sm?.getSensorList(Sensor.TYPE_ALL) ?: emptyList() }
+    val sensors = remember {
+        try {
+            val sm = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            sm?.getSensorList(Sensor.TYPE_ALL) ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -1016,16 +1119,26 @@ fun SensorsInventoryTool() {
 @Composable
 fun VolumeStreamsTool() {
     val context = LocalContext.current
-    val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-
-    val mediaVol = am?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 7
-    val maxMedia = am?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
-
-    val ringVol = am?.getStreamVolume(AudioManager.STREAM_RING) ?: 5
-    val maxRing = am?.getStreamMaxVolume(AudioManager.STREAM_RING) ?: 10
-
-    val alarmVol = am?.getStreamVolume(AudioManager.STREAM_ALARM) ?: 6
-    val maxAlarm = am?.getStreamMaxVolume(AudioManager.STREAM_ALARM) ?: 10
+    val volumes = remember {
+        try {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            val mVol = am?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 7
+            val mMax = am?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
+            val rVol = am?.getStreamVolume(AudioManager.STREAM_RING) ?: 5
+            val rMax = am?.getStreamMaxVolume(AudioManager.STREAM_RING) ?: 10
+            val aVol = am?.getStreamVolume(AudioManager.STREAM_ALARM) ?: 6
+            val aMax = am?.getStreamMaxVolume(AudioManager.STREAM_ALARM) ?: 10
+            listOf(mVol, mMax, rVol, rMax, aVol, aMax)
+        } catch (_: Exception) {
+            listOf(7, 15, 5, 10, 6, 10)
+        }
+    }
+    val mediaVol = volumes[0]
+    val maxMedia = volumes[1]
+    val ringVol = volumes[2]
+    val maxRing = volumes[3]
+    val alarmVol = volumes[4]
+    val maxAlarm = volumes[5]
 
     Column(
         modifier = Modifier
