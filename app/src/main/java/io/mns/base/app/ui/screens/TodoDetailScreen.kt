@@ -91,8 +91,8 @@ fun TodoDetailScreen(
     onBack: () -> Unit,
     viewModel: TodoDetailViewModel = koinViewModel()
 ) {
-    val todoItem by viewModel.todoItem.observeAsState()
-    val doneItem by viewModel.doneItem.observeAsState()
+    val todoItem by viewModel.todoItem.collectAsState()
+    val doneItem by viewModel.doneItem.collectAsState()
 
     LaunchedEffect(id, mode) {
         if (id != null) {

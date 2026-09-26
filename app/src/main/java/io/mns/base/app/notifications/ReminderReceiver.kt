@@ -23,12 +23,12 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
-        val todoId = intent.getStringExtra(ReminderManager.EXTRA_TODO_ID) ?: return
+        val todoId = intent.getStringExtra(AndroidReminderManager.EXTRA_TODO_ID) ?: return
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
 
         when (action) {
-            ReminderManager.ACTION_MARK_DONE -> {
+            AndroidReminderManager.ACTION_MARK_DONE -> {
                 notificationManager.cancel(todoId.hashCode())
                 CoroutineScope(Dispatchers.IO).launch {
                     val item = repository.getTodoById(todoId)
@@ -37,7 +37,7 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     }
                 }
             }
-            ReminderManager.ACTION_SNOOZE_15M -> {
+            AndroidReminderManager.ACTION_SNOOZE_15M -> {
                 notificationManager.cancel(todoId.hashCode())
                 CoroutineScope(Dispatchers.IO).launch {
                     val item = repository.getTodoById(todoId)
@@ -49,7 +49,7 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     }
                 }
             }
-            ReminderManager.ACTION_SNOOZE_1H -> {
+            AndroidReminderManager.ACTION_SNOOZE_1H -> {
                 notificationManager.cancel(todoId.hashCode())
                 CoroutineScope(Dispatchers.IO).launch {
                     val item = repository.getTodoById(todoId)
@@ -61,9 +61,9 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     }
                 }
             }
-            ReminderManager.ACTION_REMINDER -> {
-                val title = intent.getStringExtra(ReminderManager.EXTRA_TITLE) ?: "Task Reminder"
-                val description = intent.getStringExtra(ReminderManager.EXTRA_DESCRIPTION).orEmpty()
+            AndroidReminderManager.ACTION_REMINDER -> {
+                val title = intent.getStringExtra(AndroidReminderManager.EXTRA_TITLE) ?: "Task Reminder"
+                val description = intent.getStringExtra(AndroidReminderManager.EXTRA_DESCRIPTION).orEmpty()
 
                 val openAppIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -77,8 +77,8 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
 
                 // Mark Done Action
                 val doneIntent = Intent(context, ReminderReceiver::class.java).apply {
-                    this.action = ReminderManager.ACTION_MARK_DONE
-                    putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
+                    this.action = AndroidReminderManager.ACTION_MARK_DONE
+                    putExtra(AndroidReminderManager.EXTRA_TODO_ID, todoId)
                 }
                 val donePendingIntent = PendingIntent.getBroadcast(
                     context,
@@ -89,8 +89,8 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
 
                 // Snooze 15m Action
                 val snooze15Intent = Intent(context, ReminderReceiver::class.java).apply {
-                    this.action = ReminderManager.ACTION_SNOOZE_15M
-                    putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
+                    this.action = AndroidReminderManager.ACTION_SNOOZE_15M
+                    putExtra(AndroidReminderManager.EXTRA_TODO_ID, todoId)
                 }
                 val snooze15PendingIntent = PendingIntent.getBroadcast(
                     context,
@@ -101,8 +101,8 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
 
                 // Snooze 1h Action
                 val snooze1hIntent = Intent(context, ReminderReceiver::class.java).apply {
-                    this.action = ReminderManager.ACTION_SNOOZE_1H
-                    putExtra(ReminderManager.EXTRA_TODO_ID, todoId)
+                    this.action = AndroidReminderManager.ACTION_SNOOZE_1H
+                    putExtra(AndroidReminderManager.EXTRA_TODO_ID, todoId)
                 }
                 val snooze1hPendingIntent = PendingIntent.getBroadcast(
                     context,
@@ -111,7 +111,7 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
                 )
 
-                val notification = NotificationCompat.Builder(context, ReminderManager.CHANNEL_ID)
+                val notification = NotificationCompat.Builder(context, AndroidReminderManager.CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle(title)
                     .setContentText(if (description.isNotBlank()) description else "This task is due now!")

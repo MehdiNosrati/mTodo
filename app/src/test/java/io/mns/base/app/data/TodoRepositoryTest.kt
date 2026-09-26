@@ -1,9 +1,9 @@
 package io.mns.base.app.data
 
-import androidx.lifecycle.MutableLiveData
 import io.mns.base.app.data.persistence.DoneDao
 import io.mns.base.app.data.persistence.TodoDao
 import io.mockk.*
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -24,7 +24,8 @@ class TodoRepositoryTest {
 
     @Test
     fun loadTodoItems_delegatesToTodoDao() {
-        val expected = MutableLiveData<List<TodoItem>>(listOf(TodoItem("1", 1000L, "Test Todo")))
+        val expectedList = listOf(TodoItem("1", 1000L, "Test Todo"))
+        val expected = flowOf(expectedList)
         every { todoDao.getTodos() } returns expected
 
         val result = repository.loadTodoItems()
@@ -35,7 +36,8 @@ class TodoRepositoryTest {
 
     @Test
     fun loadDoneItems_delegatesToDoneDao() {
-        val expected = MutableLiveData<List<DoneItem>>(listOf(DoneItem("1", 1000L, "Done Task")))
+        val expectedList = listOf(DoneItem("1", 1000L, "Done Task"))
+        val expected = flowOf(expectedList)
         every { doneDao.getDoneItems() } returns expected
 
         val result = repository.loadDoneItems()

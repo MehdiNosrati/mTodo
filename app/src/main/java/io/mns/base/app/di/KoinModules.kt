@@ -1,23 +1,26 @@
 package io.mns.base.app.di
 
-import androidx.room.Room
 import io.mns.base.app.data.TodoRepository
+import io.mns.base.app.data.backup.BackupManager
 import io.mns.base.app.data.persistence.TodoDataBase
-import io.mns.base.app.ui.viewmodels.DoneViewModel
-import io.mns.base.app.ui.viewmodels.HomeViewModel
-import io.mns.base.app.ui.viewmodels.SettingViewModel
+import io.mns.base.app.data.persistence.getDatabaseBuilder
+import io.mns.base.app.data.persistence.getRoomDatabase
+import io.mns.base.app.data.settings.AndroidAppSettings
+import io.mns.base.app.data.settings.AppSettings
+import io.mns.base.app.notifications.ReminderManager
+import io.mns.base.app.ui.viewmodels.*
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 object KoinModules {
     val appModule = module {
 
-        single {
-            Room.databaseBuilder(get(), TodoDataBase::class.java, "todo_db")
-                .addMigrations(TodoDataBase.MIGRATION_2_3, TodoDataBase.MIGRATION_3_4, TodoDataBase.MIGRATION_4_5)
-                .fallbackToDestructiveMigration()
-                .build()
+        single<TodoDataBase> {
+            getRoomDatabase(getDatabaseBuilder(get()))
         }
+
+        single<ReminderManager> { io.mns.base.app.notifications.AndroidReminderManager(get()) }
+        single<AppSettings> { AndroidAppSettings(get()) }
 
         single {
             TodoRepository(get<TodoDataBase>().todoDao(), get<TodoDataBase>().doneDao()).apply {
@@ -27,13 +30,12 @@ object KoinModules {
             }
         }
 
-        single { io.mns.base.app.notifications.ReminderManager(get()) }
-        single { io.mns.base.app.data.backup.BackupManager(get(), get()) }
+        single { BackupManager(get()) }
 
-        viewModel { HomeViewModel(get()) }
-        viewModel { DoneViewModel(get()) }
-        viewModel { SettingViewModel(get()) }
-        viewModel { io.mns.base.app.ui.viewmodels.InsightsViewModel(get()) }
-        viewModel { io.mns.base.app.ui.viewmodels.TodoDetailViewModel(get()) }
+        viewModel { HomeViewModel(get(), get(), get()) }
+        viewModel { DoneViewModel(get(), get()) }
+        viewModel { SettingViewModel(get(), get(), get(), get(), get()) }
+        viewModel { InsightsViewModel(get(), get(), get()) }
+        viewModel { TodoDetailViewModel(get(), get(), get()) }
     }
 }

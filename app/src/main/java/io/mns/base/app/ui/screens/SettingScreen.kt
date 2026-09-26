@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import io.mns.base.app.ui.exportBackup
+import io.mns.base.app.ui.restoreBackup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -94,8 +96,8 @@ fun SettingScreen(
     val context = LocalContext.current
     val sortOrder by viewModel.sortOrder.collectAsState()
     val dailyGoal by viewModel.dailyGoal.collectAsState()
-    val trashedTodos by viewModel.trashedTodos.observeAsState(emptyList())
-    val trashedDoneItems by viewModel.trashedDoneItems.observeAsState(emptyList())
+    val trashedTodos by viewModel.trashedTodos.collectAsState()
+    val trashedDoneItems by viewModel.trashedDoneItems.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -126,7 +128,7 @@ fun SettingScreen(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
         if (uri != null) {
-            viewModel.exportBackup(uri) { success, msg ->
+            viewModel.exportBackup(context, uri) { success, msg ->
                 scope.launch { snackbarHostState.showSnackbar(msg) }
             }
         }
@@ -136,7 +138,7 @@ fun SettingScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            viewModel.restoreBackup(uri) { success, msg ->
+            viewModel.restoreBackup(context, uri) { success, msg ->
                 scope.launch { snackbarHostState.showSnackbar(msg) }
             }
         }

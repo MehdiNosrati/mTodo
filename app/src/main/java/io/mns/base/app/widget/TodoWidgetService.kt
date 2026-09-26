@@ -66,8 +66,9 @@ class TodoWidgetFactory(private val context: Context) : RemoteViewsService.Remot
         if (item.category.isNotBlank() && item.category != "General") {
             subtitleParts.add("📁 ${item.category}")
         }
-        if (item.dueDate != null) {
-            val isOverdue = item.dueDate < System.currentTimeMillis()
+        val due = item.dueDate
+        if (due != null) {
+            val isOverdue = due < System.currentTimeMillis()
             subtitleParts.add(if (isOverdue) "Overdue" else "Due")
         }
         if (item.tags.isNotEmpty()) {

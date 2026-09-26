@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "mTodo"
 include(":app")
 include(":android-utilities")
+include(":shared")

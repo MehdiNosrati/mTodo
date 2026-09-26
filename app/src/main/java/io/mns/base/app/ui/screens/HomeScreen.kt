@@ -116,7 +116,7 @@ fun HomeScreen(
     onExpandAdd: (draft: String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    val sections by viewModel.sections.observeAsState(initial = emptyList())
+    val sections by viewModel.sections.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val sortOrder by viewModel.sortOrder.collectAsState()
@@ -932,8 +932,9 @@ fun TodoItemRow(
                                 color = item.priority.color
                             )
                         }
-                        if (item.dueDate != null) {
-                            val (dueText, isOverdue) = formatDueDate(item.dueDate)
+                        val due = item.dueDate
+                        if (due != null) {
+                            val (dueText, isOverdue) = formatDueDate(due)
                             Text(
                                 text = dueText,
                                 style = MaterialTheme.typography.labelSmall.copy(

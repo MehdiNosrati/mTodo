@@ -90,11 +90,13 @@ android {
 
 dependencies {
     implementation(project(":android-utilities"))
+    implementation(project(":shared"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.multidex)
     implementation(libs.material)
+    implementation(libs.kotlinx.datetime)
 
     // Room
     implementation(libs.room.runtime)
