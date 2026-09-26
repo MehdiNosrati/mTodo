@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Settings
@@ -42,6 +43,7 @@ sealed class Screen(
     object Insights : Screen("insights", "Insights", Icons.AutoMirrored.Filled.TrendingUp)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object Debug : Screen("debug", "Debug", Icons.Default.BugReport)
+    object SuperFeatures : Screen("super_features", "Superpowers", Icons.Default.AutoAwesome)
 }
 
 private val NavBrand1 = Color(0xFF6366F1)
@@ -218,8 +220,38 @@ fun MainScreen(isDark: Boolean, onToggleTheme: () -> Unit) {
                     onToggleTheme = onToggleTheme,
                     onDebugClick = if (BuildConfig.DEBUG) {
                         { navController.navigate(Screen.Debug.route) }
-                    } else null
+                    } else null,
+                    onFeaturesClick = { navController.navigate(Screen.SuperFeatures.route) }
                 )
+            }
+            composable(
+                route = Screen.SuperFeatures.route,
+                enterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                exitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                },
+                popEnterTransition = {
+                    fadeIn(tween(250)) + slideInVertically(
+                        initialOffsetY = { it / 8 },
+                        animationSpec = tween(250)
+                    )
+                },
+                popExitTransition = {
+                    fadeOut(tween(200)) + slideOutVertically(
+                        targetOffsetY = { it / 8 },
+                        animationSpec = tween(200)
+                    )
+                }
+            ) {
+                SuperAppFeaturesScreen(onBack = { navController.popBackStack() })
             }
             if (BuildConfig.DEBUG) {
                 composable(

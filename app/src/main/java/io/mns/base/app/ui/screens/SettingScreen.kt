@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -93,6 +94,7 @@ fun SettingScreen(
     onBack: () -> Unit,
     onToggleTheme: () -> Unit,
     onDebugClick: (() -> Unit)? = null,
+    onFeaturesClick: (() -> Unit)? = null,
     viewModel: SettingViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
@@ -199,6 +201,7 @@ fun SettingScreen(
             restoreLauncher.launch(arrayOf("application/json", "*/*"))
         },
         onDebugClick = onDebugClick,
+        onFeaturesClick = onFeaturesClick,
         snackbarHostState = snackbarHostState
     )
 }
@@ -226,6 +229,7 @@ fun SettingScreenContent(
     onExportClick: () -> Unit = {},
     onRestoreClick: () -> Unit = {},
     onDebugClick: (() -> Unit)? = null,
+    onFeaturesClick: (() -> Unit)? = null,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     animate: Boolean = true
 ) {
@@ -693,6 +697,29 @@ fun SettingScreenContent(
                         title = "mTodo v2.5.0",
                         subtitle = "Offline-first, private & distraction-free"
                     ) {}
+                    if (onFeaturesClick != null) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        SettingsRow(
+                            icon = Icons.Default.AutoAwesome,
+                            iconBrush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF6366F1), Color(0xFFA78BFA)),
+                                start = Offset.Zero,
+                                end = Offset.Infinite
+                            ),
+                            title = "Super App Capabilities",
+                            subtitle = "Explore all 100 active powerhouse features"
+                        ) {
+                            FilledTonalButton(
+                                onClick = onFeaturesClick,
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Text("Explore", fontSize = 12.sp)
+                            }
+                        }
+                    }
                 }
             }
 
