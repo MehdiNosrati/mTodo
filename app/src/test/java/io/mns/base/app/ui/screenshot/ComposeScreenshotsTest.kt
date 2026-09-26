@@ -2,7 +2,10 @@ package io.mns.base.app.ui.screenshot
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -151,11 +154,19 @@ class ComposeScreenshotsTest {
     fun testHomeScreenWithItems() {
         composeTestRule.setContent {
             MTodoTheme(darkTheme = false) {
-                HomeScreenContent(
-                    sections = sampleSections,
-                    availableCategories = listOf("Work", "Personal", "Ideas"),
-                    initialFabVisible = true
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    HomeScreenContent(
+                        sections = sampleSections,
+                        availableCategories = listOf("Work", "Personal", "Ideas"),
+                        initialFabVisible = true
+                    )
+                    ToolboxSideAnchorButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .offset(y = (-40).dp)
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/home_screen_content.png")
@@ -178,9 +189,17 @@ class ComposeScreenshotsTest {
     fun testDoneScreenWithItems() {
         composeTestRule.setContent {
             MTodoTheme(darkTheme = false) {
-                DoneScreenContent(
-                    items = sampleDoneItems
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    DoneScreenContent(
+                        items = sampleDoneItems
+                    )
+                    ToolboxSideAnchorButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .offset(y = (-40).dp)
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/done_screen_content.png")
@@ -203,10 +222,19 @@ class ComposeScreenshotsTest {
     fun testSettingScreen() {
         composeTestRule.setContent {
             MTodoTheme(darkTheme = false) {
-                SettingScreenContent(
-                    isDark = false,
-                    animate = false
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SettingScreenContent(
+                        isDark = false,
+                        animate = false,
+                        onToolboxClick = {}
+                    )
+                    ToolboxSideAnchorButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .offset(y = (-40).dp)
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/setting_screen.png")
@@ -241,10 +269,18 @@ class ComposeScreenshotsTest {
         )
         composeTestRule.setContent {
             MTodoTheme(darkTheme = false) {
-                InsightsScreenContent(
-                    statistics = sampleStats,
-                    animate = false
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    InsightsScreenContent(
+                        statistics = sampleStats,
+                        animate = false
+                    )
+                    ToolboxSideAnchorButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .offset(y = (-40).dp)
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureRoboImage("src/test/snapshots/images/insights_screen.png")
