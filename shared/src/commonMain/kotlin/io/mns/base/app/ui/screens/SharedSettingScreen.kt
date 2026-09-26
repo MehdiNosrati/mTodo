@@ -18,9 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.mns.base.app.data.SortOrder
 import io.mns.base.app.ui.viewmodels.SettingViewModel
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -33,10 +37,16 @@ fun SharedSettingScreen(
     val sortOrder by viewModel.sortOrder.collectAsState()
     val trashedTodos by viewModel.trashedTodos.collectAsState()
     val trashedDone by viewModel.trashedDoneItems.collectAsState()
+    val totalTrash = trashedTodos.size + trashedDone.size
 
     var showTrashDialog by remember { mutableStateOf(false) }
+    var showConfirmEmptyTrash by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -108,19 +118,25 @@ fun SharedSettingScreen(
                 }
             }
 
-            // Trash Section
-            val totalTrash = trashedTodos.size + trashedDone.size
+            // Recycle Bin Section
             item {
                 SettingsSection(title = "Data Management") {
                     SettingsRow(
                         icon = Icons.Default.DeleteSweep,
-                        title = "Trash",
-                        subtitle = if (totalTrash == 0) "Trash is empty" else "$totalTrash deleted items (auto-purged after 30 days)",
+                        title = "Recycle Bin",
+                        subtitle = if (totalTrash == 0) {
+                            "Recycle bin is empty"
+                        } else {
+                            "$totalTrash deleted ${if (totalTrash == 1) "item" else "items"} · Tap to view or restore"
+                        },
+                        onClick = { showTrashDialog = true },
                         trailing = {
-                            if (totalTrash > 0) {
-                                TextButton(onClick = { viewModel.emptyTrash() }) {
-                                    Text("Empty", color = MaterialTheme.colorScheme.error)
-                                }
+                            FilledTonalButton(
+                                onClick = { showTrashDialog = true },
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            ) {
+                                Text("View", style = MaterialTheme.typography.labelMedium)
                             }
                         }
                     )
@@ -143,6 +159,248 @@ fun SharedSettingScreen(
                         trailing = {}
                     )
                 }
+            }
+        }
+    }
+
+    // Recycle Bin Dialog
+    if (showTrashDialog) {
+        AlertDialog(
+            onDismissRequest = { showTrashDialog = false },
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Recycle Bin ($totalTrash)",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (totalTrash > 0) {
+                        TextButton(
+                            onClick = { showConfirmEmptyTrash = true },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Empty All", fontSize = 13.sp)
+                        }
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 420.dp)
+                ) {
+                    Text(
+                        text = "Deleted items are kept for 30 days before being automatically purged.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    if (totalTrash == 0) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 36.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.DeleteSweep,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(52.dp)
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "Recycle bin is empty",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Deleted tasks will appear here",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(trashedTodos, key = { "todo_${it.id}" }) { todo ->
+                                TrashedItemRow(
+                                    title = todo.title,
+                                    isDone = false,
+                                    category = todo.category,
+                                    onRestore = {
+                                        viewModel.restoreTodoFromTrash(todo)
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Restored \"${todo.title}\"")
+                                        }
+                                    },
+                                    onDeleteForever = {
+                                        viewModel.hardDeleteTodo(todo)
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Permanently deleted \"${todo.title}\"")
+                                        }
+                                    }
+                                )
+                            }
+                            items(trashedDone, key = { "done_${it.id}" }) { done ->
+                                TrashedItemRow(
+                                    title = done.title,
+                                    isDone = true,
+                                    category = done.category,
+                                    onRestore = {
+                                        viewModel.restoreDoneFromTrash(done)
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Restored \"${done.title}\"")
+                                        }
+                                    },
+                                    onDeleteForever = {
+                                        viewModel.hardDeleteDone(done)
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Permanently deleted \"${done.title}\"")
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showTrashDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    // Confirmation Alert to Empty Trash
+    if (showConfirmEmptyTrash) {
+        AlertDialog(
+            onDismissRequest = { showConfirmEmptyTrash = false },
+            title = {
+                Text("Empty Recycle Bin?", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("All $totalTrash items in the Recycle Bin will be permanently deleted. This action cannot be undone.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.emptyTrash()
+                        showConfirmEmptyTrash = false
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Recycle bin emptied")
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Empty All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmEmptyTrash = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun TrashedItemRow(
+    title: String,
+    isDone: Boolean,
+    category: String,
+    onRestore: () -> Unit,
+    onDeleteForever: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = if (isDone) {
+                            Color(0xFF10B981).copy(alpha = 0.15f)
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        }
+                    ) {
+                        Text(
+                            text = if (isDone) "Done" else "Active",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isDone) Color(0xFF10B981) else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                        )
+                    }
+                    if (category.isNotBlank() && category != "General") {
+                        Text(
+                            text = "• $category",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = onRestore,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Restore,
+                    contentDescription = "Restore item",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            IconButton(
+                onClick = onDeleteForever,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DeleteForever,
+                    contentDescription = "Delete forever",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
@@ -180,11 +438,13 @@ private fun SettingsRow(
     icon: ImageVector,
     title: String,
     subtitle: String,
+    onClick: (() -> Unit)? = null,
     trailing: @Composable () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
